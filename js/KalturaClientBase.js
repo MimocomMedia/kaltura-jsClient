@@ -106,7 +106,7 @@ KalturaClientBase.prototype.KALTURA_API_VERSION = "3.0";
 KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_JSON = 1;
 KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_XML = 2;
 KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_PHP = 3;
-
+KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_JSONP = 9;
 /**
  * @param KalturaConfiguration The Kaltura Client - this is the facade through which all service actions should be called.
  */
@@ -159,7 +159,9 @@ KalturaClientBase.prototype.doQueue = function(callback)
 	this.addParam(params, "apiVersion", this.KALTURA_API_VERSION);
 	this.addParam(params, "format", this.config.format);
 	this.addParam(params, "clientTag", this.config.clientTag);
-	var url = this.config.serviceUrl + "/api_v3/index.php?service=";
+	var url = this.config.serviceUrl + this.config.serviceBase;
+	//if (!this.config.broker)
+	//	KalturaConfiguration.prototype.broker = new OX.AJAST.Broker(url, this.config.callback, true, 10000);
 	var call = null;
 	if (this.useMultiRequest){
 		url += "multirequest";
@@ -211,69 +213,20 @@ KalturaClientBase.prototype.signature = function(params)
  * @param parameters params					the parameters to pass.
  * @return array 							the results and errors inside an array.
  */
-KalturaClientBase.prototype.doHttpRequest = function (callback, url, params, files)
+KalturaClientBase.prototype.doHttpRequest = function (callCompletedCallback, url, params, files)
 {
-	if(!params)
-		params = new Object();
-	if(!files)
-		files = new Object();
-	var data = params;
-	//var enctype = "application/x-www-form-urlencoded";
-	var enctype = "text/plain";
-	if(files.length) {
-		enctype = "multipart/form-data";
-		for(var v in files)
-		{
-			var $file = files[v]; // must be a jquery object that points to a file input
-			data[v] = $file.val();
-		}
+	for(p in params) {
+		url += '&' + p + '=' + encodeURIComponent(params[p]);
 	}
-	//fix a bug with the request handling:
-	window.setTimeout(this.doAjax, 0, callback, url, data, enctype);
-	console.log('after request: '+url, data);
-};
-
-KalturaClientBase.prototype.doAjax = function (callback, url, data, enctype) {
-	console.log("before request: ", url, data);
-	$.ajax({
-        type: "POST",
-        dataType: "text",
-        aysnch:false,
-		cache: false,
-        url: url,
-        enctype: enctype,
-        data: data,
-        error: function errorHandler(XHRobj,errtype,errObj) {
-				if (errObj) {
-		    		str = "Error: "+errObj.number
-		    			+"\nType: "+errObj.name
-		    			+"\nDescription: "+errObj.description
-		    			+"\nSource Object Id: "+errObj.srcElement.instanceId;
-		    		console.log(str);
-				} else {
-					console.log(XHRobj, errtype);
-				}
-        },
-        complete: function (XHRobj, textStatus) {
-        	console.log("complete?! ",XHRobj, textStatus, this);  
-        },
-        success: function successHandler(data,status,XHRobj) {
-	    		if (XHRobj.readyState == 4) {
-	    			str = "readyState:"+XHRobj.readyState
-	    					+"\nresponseText:"+XHRobj.responseText
-	    					+"\nstatus:"+XHRobj.status
-	    					+"\nstatusText:"+XHRobj.statusText
-	    					+"\nSource Object Id: "+XHRobj.instanceId;
-    				resultObj = unserialize(XHRobj.responseText);
-    				//console.log(resultObj);
-    				if (resultObj === false) 
-    					console.log("failed to serialize server result\n$postResult");
-    				dumpRes = dump(resultObj);
-    				console.log("result (object dump): " + dumpRes);
-	    			callback(resultObj);
-	    		}
-	    	}
-    });
+	OX.AJAST.call(url, "callback", callCompletedCallback, 5000, false);
+	
+	/*
+	// Alternative way can be to use the Broker of OX.AJAST
+	// Create a broker object
+	var broker = new OX.AJAST.Broker(url,'callback');
+	// Perform the same call using the broker
+	broker.call(params, callCompletedCallback);
+	*/
 };
 
 /**
@@ -434,10 +387,13 @@ function KalturaConfiguration(partnerId)
 }
 
 KalturaConfiguration.prototype.logger		= null;
-KalturaConfiguration.prototype.serviceUrl	= "http://www.kaltura.com";
+KalturaConfiguration.prototype.serviceUrl	= "http://www.kaltura.com/";
+KalturaConfiguration.prototype.serviceBase 	= "/api_v3/index.php?service=";
 KalturaConfiguration.prototype.partnerId	= null;
-KalturaConfiguration.prototype.format		= KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_PHP;
+KalturaConfiguration.prototype.format		= KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_JSONP;
 KalturaConfiguration.prototype.clientTag	= "js";
+//KalturaConfiguration.prototype.callback		= "callback";
+//KalturaConfiguration.prototype.broker 		= null;
 
 /**
  * Set logger to get kaltura client debug logs.
