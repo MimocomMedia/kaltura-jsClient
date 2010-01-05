@@ -321,6 +321,42 @@ KalturaClientBase.prototype.log = function(msg)
 };
 
 /**
+ * Abstract base class for all client objects
+ */
+function KalturaObjectBase()
+{
+}
+/**
+ * serializes new object's parameters.
+ */
+KalturaObjectBase.prototype.toParams = function()
+{
+	var params = new Object();
+	params["objectType"] = getClass(this);
+    for(var prop in this) {
+    	var val = this[prop];
+		this.addIfNotNull(params, prop, val);
+	}
+	return params;
+};
+/**
+ * validate a paramter's value is not null, if not null, add the parameter to the collection.
+ * @param	params		the collection of parameters to send in a service action request.
+ * @param	paramName	the new parameter name to add.
+ * @param	paramValue	the new parameter value to add.
+ */
+KalturaObjectBase.prototype.addIfNotNull = function(params, paramName, paramValue)
+{
+	if (paramValue != null) {
+		if(paramValue instanceof KalturaObjectBase) {
+			params[paramName] = paramValue.toParams();
+		} else {
+			params[paramName] = paramValue;
+		}
+	}
+};
+
+/**
  * Abstract base class for all client services
  * Initialize the service keeping reference to the KalturaClient
  * @param KalturaClientm client
@@ -332,17 +368,10 @@ KalturaServiceBase.prototype.init = function(client)
 {
 	this.client = client;
 };
-
 /**
  * @param KalturaClient
  */
 KalturaServiceBase.prototype.client = null;
-/**
- * Abstract base class for all client objects
- */
-function KalturaObjectBase()
-{
-}
 /**
  * validate a paramter's value is not null, if not null, add the parameter to the collection.
  * @param	params		the collection of parameters to send in a service action request.
@@ -372,7 +401,6 @@ KalturaServiceBase.prototype.toParams = function()
 	}
 	return params;
 };
-
 /**
  * Constructs new Kaltura configuration object
  * @param partnerId		a valid Kaltura partner id.
@@ -392,8 +420,6 @@ KalturaConfiguration.prototype.serviceBase 	= "/api_v3/index.php?service=";
 KalturaConfiguration.prototype.partnerId	= null;
 KalturaConfiguration.prototype.format		= KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_JSONP;
 KalturaConfiguration.prototype.clientTag	= "js";
-//KalturaConfiguration.prototype.callback		= "callback";
-//KalturaConfiguration.prototype.broker 		= null;
 
 /**
  * Set logger to get kaltura client debug logs.
