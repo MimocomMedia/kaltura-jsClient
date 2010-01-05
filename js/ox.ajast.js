@@ -25,7 +25,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-if(typeof(OX) === 'undefined') OX = {};
+if(typeof(OX) === 'undefined') var OX = {};
 OX.AJAST = 
 {
   Broker : function(url, callbackparameter, optional_decode_json_response, optional_timeout_milliseconds, optional_default_params)

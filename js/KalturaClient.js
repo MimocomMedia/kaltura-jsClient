@@ -5,7 +5,7 @@
 function KalturaClient(config){
 	this.init(config);
 }
-KalturaClient.prototype = new KalturaClientBase();
+KalturaClient.inheritsFrom (KalturaClientBase);
 /**
  * 
  * @param KalturaMediaService

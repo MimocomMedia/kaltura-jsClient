@@ -8,7 +8,7 @@ function KalturaAdminUser(){
 	this.email = null;
 	this.screenName = null;
 }
-KalturaAdminUser.prototype = new KalturaObjectBase();
+KalturaAdminUser.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -55,7 +55,7 @@ function KalturaBaseEntry(){
 	this.version = null;
 	this.thumbnailUrl = null;
 }
-KalturaBaseEntry.prototype = new KalturaObjectBase();
+KalturaBaseEntry.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -122,7 +122,7 @@ function KalturaBaseEntryFilter(){
 	this.tagsAdminTagsMultiLikeAnd = null;
 	this.tagsAdminTagsNameMultiLikeAnd = null;
 }
-KalturaBaseEntryFilter.prototype = new KalturaFilter();
+KalturaBaseEntryFilter.inheritsFrom (KalturaFilter);
 
 
 /**
@@ -133,14 +133,14 @@ function KalturaBaseEntryListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaBaseEntryListResponse.prototype = new KalturaObjectBase();
+KalturaBaseEntryListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaBaseEntryOrderBy(){
 }
-KalturaBaseEntryOrderBy.prototype = new KalturaObjectBase();
+KalturaBaseEntryOrderBy.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -161,7 +161,7 @@ function KalturaBulkUpload(){
 	this.logFileUrl = null;
 	this.csvFileUrl = null;
 }
-KalturaBulkUpload.prototype = new KalturaObjectBase();
+KalturaBulkUpload.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -172,7 +172,7 @@ function KalturaBulkUploadListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaBulkUploadListResponse.prototype = new KalturaObjectBase();
+KalturaBulkUploadListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -199,7 +199,7 @@ function KalturaCEError(){
 	this.description = null;
 	this.data = null;
 }
-KalturaCEError.prototype = new KalturaObjectBase();
+KalturaCEError.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -210,14 +210,14 @@ function KalturaClientNotification(){
 	this.url = null;
 	this.data = null;
 }
-KalturaClientNotification.prototype = new KalturaObjectBase();
+KalturaClientNotification.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaCommercialUseType(){
 }
-KalturaCommercialUseType.prototype = new KalturaObjectBase();
+KalturaCommercialUseType.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -248,7 +248,7 @@ function KalturaConversionProfile(){
 	this.updatedAt = null;
 	this.profileTypeSuffix = null;
 }
-KalturaConversionProfile.prototype = new KalturaObjectBase();
+KalturaConversionProfile.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -257,21 +257,21 @@ KalturaConversionProfile.prototype = new KalturaObjectBase();
 function KalturaDataEntry(){
 	this.dataContent = null;
 }
-KalturaDataEntry.prototype = new KalturaBaseEntry();
+KalturaDataEntry.inheritsFrom (KalturaBaseEntry);
 
 
 /**
  */
 function KalturaDataEntryFilter(){
 }
-KalturaDataEntryFilter.prototype = new KalturaBaseEntryFilter();
+KalturaDataEntryFilter.inheritsFrom (KalturaBaseEntryFilter);
 
 
 /**
  */
 function KalturaDataEntryOrderBy(){
 }
-KalturaDataEntryOrderBy.prototype = new KalturaBaseEntryOrderBy();
+KalturaDataEntryOrderBy.inheritsFrom (KalturaBaseEntryOrderBy);
 
 
 /**
@@ -282,7 +282,7 @@ function KalturaDataListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaDataListResponse.prototype = new KalturaObjectBase();
+KalturaDataListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -291,7 +291,7 @@ KalturaDataListResponse.prototype = new KalturaObjectBase();
 function KalturaFilter(){
 	this.orderBy = null;
 }
-KalturaFilter.prototype = new KalturaObjectBase();
+KalturaFilter.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -302,7 +302,7 @@ function KalturaFilterPager(){
 	this.pageSize = null;
 	this.pageIndex = null;
 }
-KalturaFilterPager.prototype = new KalturaObjectBase();
+KalturaFilterPager.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -327,7 +327,7 @@ function KalturaMediaEntry(){
 	this.mediaDate = null;
 	this.dataUrl = null;
 }
-KalturaMediaEntry.prototype = new KalturaPlayableEntry();
+KalturaMediaEntry.inheritsFrom (KalturaPlayableEntry);
 
 
 /**
@@ -342,14 +342,14 @@ function KalturaMediaEntryFilter(){
 	this.mediaDateGreaterThanOrEqual = null;
 	this.mediaDateLessThanOrEqual = null;
 }
-KalturaMediaEntryFilter.prototype = new KalturaPlayableEntryFilter();
+KalturaMediaEntryFilter.inheritsFrom (KalturaPlayableEntryFilter);
 
 
 /**
  */
 function KalturaMediaEntryOrderBy(){
 }
-KalturaMediaEntryOrderBy.prototype = new KalturaPlayableEntryOrderBy();
+KalturaMediaEntryOrderBy.inheritsFrom (KalturaPlayableEntryOrderBy);
 
 
 /**
@@ -360,7 +360,7 @@ function KalturaMediaListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaMediaListResponse.prototype = new KalturaObjectBase();
+KalturaMediaListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -373,21 +373,21 @@ function KalturaMixEntry(){
 	this.editorType = null;
 	this.dataContent = null;
 }
-KalturaMixEntry.prototype = new KalturaPlayableEntry();
+KalturaMixEntry.inheritsFrom (KalturaPlayableEntry);
 
 
 /**
  */
 function KalturaMixEntryFilter(){
 }
-KalturaMixEntryFilter.prototype = new KalturaPlayableEntryFilter();
+KalturaMixEntryFilter.inheritsFrom (KalturaPlayableEntryFilter);
 
 
 /**
  */
 function KalturaMixEntryOrderBy(){
 }
-KalturaMixEntryOrderBy.prototype = new KalturaPlayableEntryOrderBy();
+KalturaMixEntryOrderBy.inheritsFrom (KalturaPlayableEntryOrderBy);
 
 
 /**
@@ -398,7 +398,7 @@ function KalturaMixListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaMixListResponse.prototype = new KalturaObjectBase();
+KalturaMixListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -427,7 +427,7 @@ function KalturaModerationFlag(){
 	this.createdAt = null;
 	this.updatedAt = null;
 }
-KalturaModerationFlag.prototype = new KalturaObjectBase();
+KalturaModerationFlag.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -438,7 +438,7 @@ function KalturaModerationFlagListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaModerationFlagListResponse.prototype = new KalturaObjectBase();
+KalturaModerationFlagListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -501,7 +501,7 @@ function KalturaPartner(){
 	this.adminSecret = null;
 	this.cmsPassword = null;
 }
-KalturaPartner.prototype = new KalturaObjectBase();
+KalturaPartner.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -520,7 +520,7 @@ function KalturaPartnerUsage(){
 	this.reachedLimitDate = null;
 	this.usageGraph = null;
 }
-KalturaPartnerUsage.prototype = new KalturaObjectBase();
+KalturaPartnerUsage.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -537,21 +537,21 @@ function KalturaPlayableEntry(){
 	this.height = null;
 	this.duration = null;
 }
-KalturaPlayableEntry.prototype = new KalturaBaseEntry();
+KalturaPlayableEntry.inheritsFrom (KalturaBaseEntry);
 
 
 /**
  */
 function KalturaPlayableEntryFilter(){
 }
-KalturaPlayableEntryFilter.prototype = new KalturaBaseEntryFilter();
+KalturaPlayableEntryFilter.inheritsFrom (KalturaBaseEntryFilter);
 
 
 /**
  */
 function KalturaPlayableEntryOrderBy(){
 }
-KalturaPlayableEntryOrderBy.prototype = new KalturaBaseEntryOrderBy();
+KalturaPlayableEntryOrderBy.inheritsFrom (KalturaBaseEntryOrderBy);
 
 
 /**
@@ -571,14 +571,14 @@ function KalturaPlaylist(){
 	this.views = null;
 	this.duration = null;
 }
-KalturaPlaylist.prototype = new KalturaBaseEntry();
+KalturaPlaylist.inheritsFrom (KalturaBaseEntry);
 
 
 /**
  */
 function KalturaPlaylistFilter(){
 }
-KalturaPlaylistFilter.prototype = new KalturaBaseEntryFilter();
+KalturaPlaylistFilter.inheritsFrom (KalturaBaseEntryFilter);
 
 
 /**
@@ -589,14 +589,14 @@ function KalturaPlaylistListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaPlaylistListResponse.prototype = new KalturaObjectBase();
+KalturaPlaylistListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaPlaylistOrderBy(){
 }
-KalturaPlaylistOrderBy.prototype = new KalturaBaseEntryOrderBy();
+KalturaPlaylistOrderBy.inheritsFrom (KalturaBaseEntryOrderBy);
 
 
 /**
@@ -607,7 +607,7 @@ function KalturaReportGraph(){
 	this.id = null;
 	this.data = null;
 }
-KalturaReportGraph.prototype = new KalturaObjectBase();
+KalturaReportGraph.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -624,7 +624,7 @@ function KalturaReportInputFilter(){
 	this.searchInTags = null;
 	this.searchInAdminTags = null;
 }
-KalturaReportInputFilter.prototype = new KalturaObjectBase();
+KalturaReportInputFilter.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -637,7 +637,7 @@ function KalturaReportTable(){
 	this.data = null;
 	this.totalCount = null;
 }
-KalturaReportTable.prototype = new KalturaObjectBase();
+KalturaReportTable.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -648,7 +648,7 @@ function KalturaReportTotal(){
 	this.header = null;
 	this.data = null;
 }
-KalturaReportTotal.prototype = new KalturaObjectBase();
+KalturaReportTotal.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -665,7 +665,7 @@ function KalturaSearch(){
 	this.mediaType = null;
 	this.extraData = null;
 }
-KalturaSearch.prototype = new KalturaObjectBase();
+KalturaSearch.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -692,7 +692,7 @@ function KalturaSearchResult(){
 	this.licenseType = null;
 	this.flashPlaybackType = null;
 }
-KalturaSearchResult.prototype = new KalturaSearch();
+KalturaSearchResult.inheritsFrom (KalturaSearch);
 
 
 /**
@@ -703,7 +703,7 @@ function KalturaSearchResultResponse(){
 	this.objects = null;
 	this.needMediaInfo = null;
 }
-KalturaSearchResultResponse.prototype = new KalturaObjectBase();
+KalturaSearchResultResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -716,7 +716,7 @@ function KalturaStartWidgetSessionResponse(){
 	this.ks = null;
 	this.userId = null;
 }
-KalturaStartWidgetSessionResponse.prototype = new KalturaObjectBase();
+KalturaStartWidgetSessionResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -761,7 +761,7 @@ function KalturaStatsEvent(){
 	this.referrer = null;
 	this.isFirstInSession = null;
 }
-KalturaStatsEvent.prototype = new KalturaObjectBase();
+KalturaStatsEvent.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -808,7 +808,7 @@ function KalturaUiConf(){
 	this.updatedAt = null;
 	this.creationMode = null;
 }
-KalturaUiConf.prototype = new KalturaObjectBase();
+KalturaUiConf.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -833,7 +833,7 @@ function KalturaUiConfFilter(){
 	this.updatedAtGreaterThanOrEqual = null;
 	this.updatedAtLessThanOrEqual = null;
 }
-KalturaUiConfFilter.prototype = new KalturaFilter();
+KalturaUiConfFilter.inheritsFrom (KalturaFilter);
 
 
 /**
@@ -844,14 +844,14 @@ function KalturaUiConfListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaUiConfListResponse.prototype = new KalturaObjectBase();
+KalturaUiConfListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaUiConfOrderBy(){
 }
-KalturaUiConfOrderBy.prototype = new KalturaObjectBase();
+KalturaUiConfOrderBy.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -902,7 +902,7 @@ function KalturaUser(){
 	this.indexedPartnerDataString = null;
 	this.storageSize = null;
 }
-KalturaUser.prototype = new KalturaObjectBase();
+KalturaUser.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -931,7 +931,7 @@ function KalturaUserFilter(){
 	this.createdAtGreaterThanOrEqual = null;
 	this.createdAtLessThanOrEqual = null;
 }
-KalturaUserFilter.prototype = new KalturaFilter();
+KalturaUserFilter.inheritsFrom (KalturaFilter);
 
 
 /**
@@ -942,14 +942,14 @@ function KalturaUserListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaUserListResponse.prototype = new KalturaObjectBase();
+KalturaUserListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaUserOrderBy(){
 }
-KalturaUserOrderBy.prototype = new KalturaObjectBase();
+KalturaUserOrderBy.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -980,7 +980,7 @@ function KalturaWidget(){
 	this.partnerData = null;
 	this.widgetHTML = null;
 }
-KalturaWidget.prototype = new KalturaObjectBase();
+KalturaWidget.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -1011,7 +1011,7 @@ function KalturaWidgetFilter(){
 	this.updatedAtLessThanOrEqual = null;
 	this.partnerDataLike = null;
 }
-KalturaWidgetFilter.prototype = new KalturaFilter();
+KalturaWidgetFilter.inheritsFrom (KalturaFilter);
 
 
 /**
@@ -1022,13 +1022,13 @@ function KalturaWidgetListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaWidgetListResponse.prototype = new KalturaObjectBase();
+KalturaWidgetListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
  */
 function KalturaWidgetOrderBy(){
 }
-KalturaWidgetOrderBy.prototype = new KalturaObjectBase();
+KalturaWidgetOrderBy.inheritsFrom (KalturaObjectBase);
 
 

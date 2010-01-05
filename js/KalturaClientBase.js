@@ -1,4 +1,158 @@
 /**
+ * Generates a URL-encoded query string from the associative (or indexed) array provided.
+ * Ported from PHP. 
+ * @param formdata			May be an array or object containing properties. 
+ * @param numeric_prefix	If numeric indices are used in the base array and this parameter is provided, it will be prepended to the numeric index for elements in the base array only. 
+ * @param arg_separator		arg_separator.output  is used to separate arguments, unless this parameter is specified, and is then used. 
+ * @return	Returns a URL-encoded string. 
+ */
+function http_build_query (formdata, numeric_prefix, arg_separator) {
+    var value, key, tmp = [];
+    var _http_build_query_helper = function (key, val, arg_separator) {
+        var k, tmp = [];
+		if (val === true) {
+            val = "1";
+        } else if (val === false) {
+            val = "0";
+        }
+		if (val !== null && typeof(val) === "object") {
+            for (k in val) {
+                if (val[k] !== null) {
+                    tmp.push(_http_build_query_helper(key + "[" + k + "]", val[k], arg_separator));
+                }
+			}
+            return tmp.join(arg_separator);
+        } else if (typeof(val) !== "function") {
+            return key + "=" + encodeURIComponent(val);
+        } else { 
+        	//throw new Error('There was an error processing for http_build_query().');
+        	return '';
+        }
+    };
+ 
+    if (!arg_separator) {
+		arg_separator = "&";
+    }
+    for (key in formdata) {
+        value = formdata[key];
+        if (numeric_prefix && !isNaN(key)) {
+			key = String(numeric_prefix) + key;
+        }
+        tmp.push(_http_build_query_helper(key, value, arg_separator));
+    }
+    return tmp.join(arg_separator);
+}
+
+/**
+ * This will only return (a string) if the object passed to getFunctionName is a function or an "object" function from IE. 
+ * The function does not rely on function.name if present as it can't always be trusted.
+ * @param func	The function to test.
+ * @return string the function name.
+ */
+function getFunctionName(func) {
+  if ( typeof func == "function" || typeof func == "object" )
+  var fName = (""+func).match(/^function\s*([\w\$]*)\s*\(/); 
+  if ( fName !== null ) 
+	  	return fName[1];
+  return null;
+}
+
+/**
+ * Getting the name of the constructor if the constructor hasn't been modified, 
+ * which if it has modified (and is therfor invalid to use), it falls back to using Object.prototype.toString 
+ * to get the class though it won't return the name of the constructor function that created it then. 
+ * If you absolutely need the constructor's name, pass true as the second argument, 
+ * and it will reset the constructor if it has been modified, to get the real constructor.
+ * @param obj	The object to get the constructor of.
+ * @param forceConstructor	preform a deep lookup for the real constructor.
+ * @return	The constructor of the given class.
+ */
+function getClass(obj, forceConstructor) {
+  if ( typeof obj == "undefined" ) return "undefined";
+  if ( obj === null ) return "null";
+  if ( forceConstructor == true && obj.hasOwnProperty("constructor") ) delete obj.constructor; // reset constructor
+  if ( forceConstructor != false && !obj.hasOwnProperty("constructor") ) return getFunctionName(obj.constructor);
+  return Object.prototype.toString.call(obj)
+    .match(/^\[object\s(.*)\]$/)[1];
+}
+
+/**
+ * validate a paramter's value is not null, if not null, add the parameter to the collection.
+ * @param	params		the collection of parameters to send in a service action request.
+ * @param	paramName	the new parameter name to add.
+ * @param	paramValue	the new parameter value to add.
+ */
+function addIfNotNull(obj, params, paramName, paramValue)
+{
+	if (paramValue != null) {
+		if(paramValue instanceof KalturaObjectBase) {
+			params[paramName] = paramValue.toParams();
+		} else {
+			params[paramName] = paramValue;
+		}
+	}
+}
+
+/**
+ * Serializes new object's parameters.
+ * @param obj	The object who's members to serialize.
+ * @return		a serialized object.
+ */
+function toParams(obj)
+{
+	var params = new Object();
+	params["objectType"] = getClass(obj);
+    for(var prop in obj) {
+    	var val = obj[prop];
+    	addIfNotNull(obj, params, prop, val);
+	}
+	return params;
+}
+
+/**
+ * Utility global method for extending javascript for allowing easier Inheritance.
+ * This method should be called directly after defining the class or object, before extending it's prototype. 
+ * @param parentClassOrObject		the parent class or object to inherit from.
+ * @return	the object or class being created (the child class).
+ */
+Function.prototype.inheritsFrom = function( parentClassOrObject ){ 
+	if ( parentClassOrObject.constructor == Function ) 
+	{ 
+		//Normal Inheritance 
+		this.prototype = new parentClassOrObject;
+		this.prototype.constructor = this;
+		this.prototype.parentClass = parentClassOrObject.prototype;
+	} 
+	else 
+	{ 
+		//Pure Virtual Inheritance 
+		this.prototype = parentClassOrObject;
+		this.prototype.constructor = this;
+		this.prototype.parentClass = parentClassOrObject;
+	} 
+	return this;
+}
+
+/**
+ * Sorts an array by key, maintaining key to data correlations. This is useful mainly for associative arrays. 
+ * @param arr 	The array to sort.
+ * @return		The sorted array.
+ */
+function ksort(arr) {
+  var sArr = [];
+  var tArr = [];
+  var n = 0;
+  for (i in arr)
+    tArr[n++] = i+"|"+arr[i];
+  tArr = tArr.sort();
+  for (var i=0; i<tArr.length; i++) {
+    var x = tArr[i].split("|");
+    sArr[x[0]] = x[1];
+  }
+  return sArr;
+}
+
+/**
  * Construct new Kaltura service action call, if params array contain sub-arrays (for objects), it will be flattened.
  * @param string	service		The Kaltura service to use.
  * @param string	action			The service action to execute.
@@ -160,8 +314,6 @@ KalturaClientBase.prototype.doQueue = function(callback)
 	this.addParam(params, "format", this.config.format);
 	this.addParam(params, "clientTag", this.config.clientTag);
 	var url = this.config.serviceUrl + this.config.serviceBase;
-	//if (!this.config.broker)
-	//	KalturaConfiguration.prototype.broker = new OX.AJAST.Broker(url, this.config.callback, true, 10000);
 	var call = null;
 	if (this.useMultiRequest){
 		url += "multirequest";
@@ -189,6 +341,7 @@ KalturaClientBase.prototype.doQueue = function(callback)
 	var signature = this.signature(params);
 	this.addParam(params, "kalsig", signature);
 	this.doHttpRequest(callback, url, params, files);
+	return true;
 };
 
 /**
@@ -198,13 +351,13 @@ KalturaClientBase.prototype.doQueue = function(callback)
  */
 KalturaClientBase.prototype.signature = function(params)
 {
-	ksort(params);
+	params = ksort(params);
 	var str = "";
 	for(var v in params) {
 		var k = params[v];
 		str += k + v;
 	}
-	return md5(str);
+	return MD5(str);
 };
 
 /**
@@ -215,18 +368,8 @@ KalturaClientBase.prototype.signature = function(params)
  */
 KalturaClientBase.prototype.doHttpRequest = function (callCompletedCallback, url, params, files)
 {
-	for(p in params) {
-		url += '&' + p + '=' + encodeURIComponent(params[p]);
-	}
+	url += '&' + http_build_query(params);
 	OX.AJAST.call(url, "callback", callCompletedCallback, 5000, false);
-	
-	/*
-	// Alternative way can be to use the Broker of OX.AJAST
-	// Create a broker object
-	var broker = new OX.AJAST.Broker(url,'callback');
-	// Perform the same call using the broker
-	broker.call(params, callCompletedCallback);
-	*/
 };
 
 /**
@@ -269,7 +412,7 @@ KalturaClientBase.prototype.setConfig = function(config)
 
 /**
  * Add parameter to array of parameters that is passed by reference
- * @param arrat params			array of parameters to pass to a call.
+ * @param array params			array of parameters to pass to a call.
  * @param string paramName		the name of the new parameter to add.
  * @param string paramValue		the value of the new parameter to add.
  */
@@ -326,35 +469,6 @@ KalturaClientBase.prototype.log = function(msg)
 function KalturaObjectBase()
 {
 }
-/**
- * serializes new object's parameters.
- */
-KalturaObjectBase.prototype.toParams = function()
-{
-	var params = new Object();
-	params["objectType"] = getClass(this);
-    for(var prop in this) {
-    	var val = this[prop];
-		this.addIfNotNull(params, prop, val);
-	}
-	return params;
-};
-/**
- * validate a paramter's value is not null, if not null, add the parameter to the collection.
- * @param	params		the collection of parameters to send in a service action request.
- * @param	paramName	the new parameter name to add.
- * @param	paramValue	the new parameter value to add.
- */
-KalturaObjectBase.prototype.addIfNotNull = function(params, paramName, paramValue)
-{
-	if (paramValue != null) {
-		if(paramValue instanceof KalturaObjectBase) {
-			params[paramName] = paramValue.toParams();
-		} else {
-			params[paramName] = paramValue;
-		}
-	}
-};
 
 /**
  * Abstract base class for all client services
@@ -372,35 +486,7 @@ KalturaServiceBase.prototype.init = function(client)
  * @param KalturaClient
  */
 KalturaServiceBase.prototype.client = null;
-/**
- * validate a paramter's value is not null, if not null, add the parameter to the collection.
- * @param	params		the collection of parameters to send in a service action request.
- * @param	paramName	the new parameter name to add.
- * @param	paramValue	the new parameter value to add.
- */
-KalturaServiceBase.prototype.addIfNotNull = function(params, paramName, paramValue)
-{
-	if (paramValue != null) {
-		if(paramValue instanceof KalturaObjectBase) {
-			params[paramName] = paramValue.toParams();
-		} else {
-			params[paramName] = paramValue;
-		}
-	}
-};
-/**
- * serializes new object's parameters.
- */
-KalturaServiceBase.prototype.toParams = function()
-{
-	var params = new Object();
-	params["objectType"] = getClass(this);
-    for(var prop in this) {
-    	var val = this[prop];
-		this.addIfNotNull(params, prop, val);
-	}
-	return params;
-};
+
 /**
  * Constructs new Kaltura configuration object
  * @param partnerId		a valid Kaltura partner id.
@@ -415,7 +501,7 @@ function KalturaConfiguration(partnerId)
 }
 
 KalturaConfiguration.prototype.logger		= null;
-KalturaConfiguration.prototype.serviceUrl	= "http://www.kaltura.com/";
+KalturaConfiguration.prototype.serviceUrl	= "http://www.kaltura.com";
 KalturaConfiguration.prototype.serviceBase 	= "/api_v3/index.php?service=";
 KalturaConfiguration.prototype.partnerId	= null;
 KalturaConfiguration.prototype.format		= KalturaClientBase.prototype.KALTURA_SERVICE_FORMAT_JSONP;

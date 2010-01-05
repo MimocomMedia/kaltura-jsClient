@@ -4,13 +4,13 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
 		<!-- <script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/combine.php?type=javascript&files=KalturaJsUtils.js,KalturaClientBase.js,KalturaTypes.js,KalturaVO.js,KalturaClient.js,KalturaServices.js,ox.ajast.js"></script> -->
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaJsUtils.js"></script>
+		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/webtoolkit.md5.js"></script>
+		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/ox.ajast.js"></script>
 		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClientBase.js"></script>
+		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClient.js"></script>
 		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaTypes.js"></script>
 		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaVO.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClient.js"></script>
 		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaServices.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/ox.ajast.js"></script>
 		<script type="text/javascript">
 			/**
 			* Prepare the JQuery for cross-domain ajax requests via flXHRproxy and register the ajax start and end events to the loading gif.
@@ -46,7 +46,6 @@
 
 			function listEntries() {
 				var entryFilter = new KalturaBaseEntryFilter();
-				console.log(getClass(entryFilter));
 				if ($('#inputType').val() != '')
 					entryFilter.typeEqual = $('#inputType').val();
 				entryFilter.statusEqual = KalturaEntryStatus.READY;
@@ -62,6 +61,7 @@
 			
 		</script>
 		<a href="#" onclick="startSession();return false;">Start session!</a>
+		<a href="#" onclick="listEntries();return false;">List Baby!</a>
 		<label for="inputPageNum">Page number: </label><input id="inputPageNum" value="1" />
 		<label for="inputType">Entry type: </label><input id="inputType" />
 		<!-- <img style="border:none; " src="/flxhr/ajax-loader.gif" id="loadingImg"/> -->

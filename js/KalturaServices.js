@@ -24,7 +24,7 @@
 function KalturaMediaService(client){
 	this.init(client);
 }
-KalturaMediaService.prototype = new KalturaServiceBase();
+KalturaMediaService.inheritsFrom (KalturaServiceBase);
 /**
  * Adds new media entry by importing an HTTP or FTP URL.
  *	The entry will be queued for import and then for conversion..
@@ -33,8 +33,8 @@ KalturaMediaService.prototype = new KalturaServiceBase();
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.addFromUrl = function(callback, mediaEntry, url){
-	kparams = new Object();
-	this.client.addParam(kparams, "mediaEntry", mediaEntry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
 	this.client.addParam(kparams, "url", url);
 	this.client.queueServiceActionCall("media", "addFromUrl", kparams);
 	if (!this.client.isMultiRequest())
@@ -52,11 +52,11 @@ KalturaMediaService.prototype.addFromSearchResult = function(callback, mediaEntr
 		mediaEntry = null;
 	if(!searchResult)
 		searchResult = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (mediaEntry != null)
-		this.client.addParam(kparams, "mediaEntry", mediaEntry.toParams());
+		this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
 	if (searchResult != null)
-		this.client.addParam(kparams, "searchResult", searchResult.toParams());
+		this.client.addParam(kparams, "searchResult", toParams(searchResult));
 	this.client.queueServiceActionCall("media", "addFromSearchResult", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -68,8 +68,8 @@ KalturaMediaService.prototype.addFromSearchResult = function(callback, mediaEntr
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.addFromUploadedFile = function(callback, mediaEntry, uploadTokenId){
-	kparams = new Object();
-	this.client.addParam(kparams, "mediaEntry", mediaEntry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
 	this.client.addParam(kparams, "uploadTokenId", uploadTokenId);
 	this.client.queueServiceActionCall("media", "addFromUploadedFile", kparams);
 	if (!this.client.isMultiRequest())
@@ -82,8 +82,8 @@ KalturaMediaService.prototype.addFromUploadedFile = function(callback, mediaEntr
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.addFromRecordedWebcam = function(callback, mediaEntry, webcamTokenId){
-	kparams = new Object();
-	this.client.addParam(kparams, "mediaEntry", mediaEntry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
 	this.client.addParam(kparams, "webcamTokenId", webcamTokenId);
 	this.client.queueServiceActionCall("media", "addFromRecordedWebcam", kparams);
 	if (!this.client.isMultiRequest())
@@ -98,7 +98,7 @@ KalturaMediaService.prototype.addFromRecordedWebcam = function(callback, mediaEn
 KalturaMediaService.prototype.get = function(callback, entryId, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("media", "get", kparams);
@@ -112,9 +112,9 @@ KalturaMediaService.prototype.get = function(callback, entryId, version){
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.update = function(callback, entryId, mediaEntry){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "mediaEntry", mediaEntry.toParams());
+	this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
 	this.client.queueServiceActionCall("media", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -124,8 +124,8 @@ KalturaMediaService.prototype.update = function(callback, entryId, mediaEntry){
  * @param	entryId	string		Media entry id to delete (optional).
  * @return	.
  */
-KalturaMediaService.prototype.delete = function(callback, entryId){
-	kparams = new Object();
+KalturaMediaService.prototype.deleteAction = function(callback, entryId){
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("media", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -142,11 +142,11 @@ KalturaMediaService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("media", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -157,7 +157,7 @@ KalturaMediaService.prototype.listAction = function(callback, filter, pager){
  * @return	string.
  */
 KalturaMediaService.prototype.upload = function(callback, fileData){
-	kparams = new Object();
+	var kparams = new Object();
 	kfiles = new Object();
 	this.client.addParam(kfiles, "fileData", fileData);
 	this.client.queueServiceActionCall("media", "upload", kparams, kfiles);
@@ -171,7 +171,7 @@ KalturaMediaService.prototype.upload = function(callback, fileData){
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.updateThumbnail = function(callback, entryId, timeOffset){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "timeOffset", timeOffset);
 	this.client.queueServiceActionCall("media", "updateThumbnail", kparams);
@@ -185,7 +185,7 @@ KalturaMediaService.prototype.updateThumbnail = function(callback, entryId, time
  * @return	KalturaMediaEntry.
  */
 KalturaMediaService.prototype.updateThumbnailJpeg = function(callback, entryId, fileData){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	kfiles = new Object();
 	this.client.addParam(kfiles, "fileData", fileData);
@@ -200,7 +200,7 @@ KalturaMediaService.prototype.updateThumbnailJpeg = function(callback, entryId, 
  * @return	int.
  */
 KalturaMediaService.prototype.requestConversion = function(callback, entryId, fileFormat){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "fileFormat", fileFormat);
 	this.client.queueServiceActionCall("media", "requestConversion", kparams);
@@ -213,8 +213,8 @@ KalturaMediaService.prototype.requestConversion = function(callback, entryId, fi
  * @return	.
  */
 KalturaMediaService.prototype.flag = function(callback, moderationFlag){
-	kparams = new Object();
-	this.client.addParam(kparams, "moderationFlag", moderationFlag.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "moderationFlag", toParams(moderationFlag));
 	this.client.queueServiceActionCall("media", "flag", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -225,7 +225,7 @@ KalturaMediaService.prototype.flag = function(callback, moderationFlag){
  * @return	.
  */
 KalturaMediaService.prototype.reject = function(callback, entryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("media", "reject", kparams);
 	if (!this.client.isMultiRequest())
@@ -237,7 +237,7 @@ KalturaMediaService.prototype.reject = function(callback, entryId){
  * @return	.
  */
 KalturaMediaService.prototype.approve = function(callback, entryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("media", "approve", kparams);
 	if (!this.client.isMultiRequest())
@@ -252,10 +252,10 @@ KalturaMediaService.prototype.approve = function(callback, entryId){
 KalturaMediaService.prototype.listFlags = function(callback, entryId, pager){
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("media", "listFlags", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -267,7 +267,7 @@ KalturaMediaService.prototype.listFlags = function(callback, entryId, pager){
  * @return	.
  */
 KalturaMediaService.prototype.anonymousRank = function(callback, entryId, rank){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "rank", rank);
 	this.client.queueServiceActionCall("media", "anonymousRank", kparams);
@@ -295,7 +295,7 @@ KalturaMediaService.prototype.anonymousRank = function(callback, entryId, rank){
 function KalturaMixingService(client){
 	this.init(client);
 }
-KalturaMixingService.prototype = new KalturaServiceBase();
+KalturaMixingService.inheritsFrom (KalturaServiceBase);
 /**
  * Adds a new mix.
  *	If the dataContent is null, a default timeline will be created..
@@ -303,8 +303,8 @@ KalturaMixingService.prototype = new KalturaServiceBase();
  * @return	KalturaMixEntry.
  */
 KalturaMixingService.prototype.add = function(callback, mixEntry){
-	kparams = new Object();
-	this.client.addParam(kparams, "mixEntry", mixEntry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "mixEntry", toParams(mixEntry));
 	this.client.queueServiceActionCall("mixing", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -318,7 +318,7 @@ KalturaMixingService.prototype.add = function(callback, mixEntry){
 KalturaMixingService.prototype.get = function(callback, entryId, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("mixing", "get", kparams);
@@ -332,9 +332,9 @@ KalturaMixingService.prototype.get = function(callback, entryId, version){
  * @return	KalturaMixEntry.
  */
 KalturaMixingService.prototype.update = function(callback, entryId, mixEntry){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "mixEntry", mixEntry.toParams());
+	this.client.addParam(kparams, "mixEntry", toParams(mixEntry));
 	this.client.queueServiceActionCall("mixing", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -344,8 +344,8 @@ KalturaMixingService.prototype.update = function(callback, entryId, mixEntry){
  * @param	entryId	string		Mix entry id to delete (optional).
  * @return	.
  */
-KalturaMixingService.prototype.delete = function(callback, entryId){
-	kparams = new Object();
+KalturaMixingService.prototype.deleteAction = function(callback, entryId){
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("mixing", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -363,11 +363,11 @@ KalturaMixingService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("mixing", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -378,7 +378,7 @@ KalturaMixingService.prototype.listAction = function(callback, filter, pager){
  * @return	KalturaMixEntry.
  */
 KalturaMixingService.prototype.cloneAction = function(callback, entryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("mixing", "clone", kparams);
 	if (!this.client.isMultiRequest())
@@ -391,7 +391,7 @@ KalturaMixingService.prototype.cloneAction = function(callback, entryId){
  * @return	KalturaMixEntry.
  */
 KalturaMixingService.prototype.appendMediaEntry = function(callback, mixEntryId, mediaEntryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "mixEntryId", mixEntryId);
 	this.client.addParam(kparams, "mediaEntryId", mediaEntryId);
 	this.client.queueServiceActionCall("mixing", "appendMediaEntry", kparams);
@@ -408,7 +408,7 @@ KalturaMixingService.prototype.appendMediaEntry = function(callback, mixEntryId,
 KalturaMixingService.prototype.requestFlattening = function(callback, entryId, fileFormat, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "fileFormat", fileFormat);
 	this.client.addParam(kparams, "version", version);
@@ -422,7 +422,7 @@ KalturaMixingService.prototype.requestFlattening = function(callback, entryId, f
  * @return	array.
  */
 KalturaMixingService.prototype.getMixesByMediaId = function(callback, mediaEntryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "mediaEntryId", mediaEntryId);
 	this.client.queueServiceActionCall("mixing", "getMixesByMediaId", kparams);
 	if (!this.client.isMultiRequest())
@@ -437,7 +437,7 @@ KalturaMixingService.prototype.getMixesByMediaId = function(callback, mediaEntry
 KalturaMixingService.prototype.getReadyMediaEntries = function(callback, mixId, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "mixId", mixId);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("mixing", "getReadyMediaEntries", kparams);
@@ -451,7 +451,7 @@ KalturaMixingService.prototype.getReadyMediaEntries = function(callback, mixId, 
  * @return	.
  */
 KalturaMixingService.prototype.anonymousRank = function(callback, entryId, rank){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "rank", rank);
 	this.client.queueServiceActionCall("mixing", "anonymousRank", kparams);
@@ -471,15 +471,15 @@ KalturaMixingService.prototype.anonymousRank = function(callback, entryId, rank)
 function KalturaDataService(client){
 	this.init(client);
 }
-KalturaDataService.prototype = new KalturaServiceBase();
+KalturaDataService.inheritsFrom (KalturaServiceBase);
 /**
  * Adds a new data entry.
  * @param	dataEntry	KalturaDataEntry		Data entry (optional).
  * @return	KalturaDataEntry.
  */
 KalturaDataService.prototype.add = function(callback, dataEntry){
-	kparams = new Object();
-	this.client.addParam(kparams, "dataEntry", dataEntry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "dataEntry", toParams(dataEntry));
 	this.client.queueServiceActionCall("data", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -493,7 +493,7 @@ KalturaDataService.prototype.add = function(callback, dataEntry){
 KalturaDataService.prototype.get = function(callback, entryId, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("data", "get", kparams);
@@ -507,9 +507,9 @@ KalturaDataService.prototype.get = function(callback, entryId, version){
  * @return	KalturaDataEntry.
  */
 KalturaDataService.prototype.update = function(callback, entryId, documentEntry){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "documentEntry", documentEntry.toParams());
+	this.client.addParam(kparams, "documentEntry", toParams(documentEntry));
 	this.client.queueServiceActionCall("data", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -519,8 +519,8 @@ KalturaDataService.prototype.update = function(callback, entryId, documentEntry)
  * @param	entryId	string		Data entry id to delete (optional).
  * @return	.
  */
-KalturaDataService.prototype.delete = function(callback, entryId){
-	kparams = new Object();
+KalturaDataService.prototype.deleteAction = function(callback, entryId){
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("data", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -537,11 +537,11 @@ KalturaDataService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("data", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -566,7 +566,7 @@ KalturaDataService.prototype.listAction = function(callback, filter, pager){
 function KalturaBaseEntryService(client){
 	this.init(client);
 }
-KalturaBaseEntryService.prototype = new KalturaServiceBase();
+KalturaBaseEntryService.inheritsFrom (KalturaServiceBase);
 /**
  * Generic add entry using an uploaded file, should be used when the uploaded entry type is not known.
  * @param	entry	KalturaBaseEntry		 (optional).
@@ -577,8 +577,8 @@ KalturaBaseEntryService.prototype = new KalturaServiceBase();
 KalturaBaseEntryService.prototype.addFromUploadedFile = function(callback, entry, uploadTokenId, type){
 	if(!type)
 		type = -1;
-	kparams = new Object();
-	this.client.addParam(kparams, "entry", entry.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "entry", toParams(entry));
 	this.client.addParam(kparams, "uploadTokenId", uploadTokenId);
 	this.client.addParam(kparams, "type", type);
 	this.client.queueServiceActionCall("baseEntry", "addFromUploadedFile", kparams);
@@ -594,7 +594,7 @@ KalturaBaseEntryService.prototype.addFromUploadedFile = function(callback, entry
 KalturaBaseEntryService.prototype.get = function(callback, entryId, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("baseEntry", "get", kparams);
@@ -607,7 +607,7 @@ KalturaBaseEntryService.prototype.get = function(callback, entryId, version){
  * @return	array.
  */
 KalturaBaseEntryService.prototype.getByIds = function(callback, entryIds){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryIds", entryIds);
 	this.client.queueServiceActionCall("baseEntry", "getByIds", kparams);
 	if (!this.client.isMultiRequest())
@@ -618,8 +618,8 @@ KalturaBaseEntryService.prototype.getByIds = function(callback, entryIds){
  * @param	entryId	string		Entry id to delete (optional).
  * @return	.
  */
-KalturaBaseEntryService.prototype.delete = function(callback, entryId){
-	kparams = new Object();
+KalturaBaseEntryService.prototype.deleteAction = function(callback, entryId){
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("baseEntry", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -636,11 +636,11 @@ KalturaBaseEntryService.prototype.listAction = function(callback, filter, pager)
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("baseEntry", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -651,7 +651,7 @@ KalturaBaseEntryService.prototype.listAction = function(callback, filter, pager)
  * @return	string.
  */
 KalturaBaseEntryService.prototype.upload = function(callback, fileData){
-	kparams = new Object();
+	var kparams = new Object();
 	kfiles = new Object();
 	this.client.addParam(kfiles, "fileData", fileData);
 	this.client.queueServiceActionCall("baseEntry", "upload", kparams, kfiles);
@@ -665,7 +665,7 @@ KalturaBaseEntryService.prototype.upload = function(callback, fileData){
  * @return	KalturaMediaEntry.
  */
 KalturaBaseEntryService.prototype.updateThumbnailJpeg = function(callback, entryId, fileData){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	kfiles = new Object();
 	this.client.addParam(kfiles, "fileData", fileData);
@@ -679,8 +679,8 @@ KalturaBaseEntryService.prototype.updateThumbnailJpeg = function(callback, entry
  * @return	.
  */
 KalturaBaseEntryService.prototype.flag = function(callback, moderationFlag){
-	kparams = new Object();
-	this.client.addParam(kparams, "moderationFlag", moderationFlag.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "moderationFlag", toParams(moderationFlag));
 	this.client.queueServiceActionCall("baseEntry", "flag", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -691,7 +691,7 @@ KalturaBaseEntryService.prototype.flag = function(callback, moderationFlag){
  * @return	.
  */
 KalturaBaseEntryService.prototype.reject = function(callback, entryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("baseEntry", "reject", kparams);
 	if (!this.client.isMultiRequest())
@@ -703,7 +703,7 @@ KalturaBaseEntryService.prototype.reject = function(callback, entryId){
  * @return	.
  */
 KalturaBaseEntryService.prototype.approve = function(callback, entryId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("baseEntry", "approve", kparams);
 	if (!this.client.isMultiRequest())
@@ -718,10 +718,10 @@ KalturaBaseEntryService.prototype.approve = function(callback, entryId){
 KalturaBaseEntryService.prototype.listFlags = function(callback, entryId, pager){
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("baseEntry", "listFlags", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -733,7 +733,7 @@ KalturaBaseEntryService.prototype.listFlags = function(callback, entryId, pager)
  * @return	.
  */
 KalturaBaseEntryService.prototype.anonymousRank = function(callback, entryId, rank){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "rank", rank);
 	this.client.queueServiceActionCall("baseEntry", "anonymousRank", kparams);
@@ -751,7 +751,7 @@ KalturaBaseEntryService.prototype.anonymousRank = function(callback, entryId, ra
 function KalturaSessionService(client){
 	this.init(client);
 }
-KalturaSessionService.prototype = new KalturaServiceBase();
+KalturaSessionService.inheritsFrom (KalturaServiceBase);
 /**
  * Start a session with Kaltura's server.
  *	The result KS is the session key that you should pass to all services that requires a ticket..
@@ -774,7 +774,7 @@ KalturaSessionService.prototype.start = function(callback, secret, userId, type,
 		expiry = 86400;
 	if(!privileges)
 		privileges = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "secret", secret);
 	this.client.addParam(kparams, "userId", userId);
 	this.client.addParam(kparams, "type", type);
@@ -794,7 +794,7 @@ KalturaSessionService.prototype.start = function(callback, secret, userId, type,
 KalturaSessionService.prototype.startWidgetSession = function(callback, widgetId, expiry){
 	if(!expiry)
 		expiry = 86400;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "widgetId", widgetId);
 	this.client.addParam(kparams, "expiry", expiry);
 	this.client.queueServiceActionCall("session", "startWidgetSession", kparams);
@@ -815,15 +815,15 @@ KalturaSessionService.prototype.startWidgetSession = function(callback, widgetId
 function KalturaUiConfService(client){
 	this.init(client);
 }
-KalturaUiConfService.prototype = new KalturaServiceBase();
+KalturaUiConfService.inheritsFrom (KalturaServiceBase);
 /**
  * UIConf Add action allows you to add a UIConf to Kaltura DB.
  * @param	uiConf	KalturaUiConf		Mandatory input parameter of type KalturaUiConf (optional).
  * @return	KalturaUiConf.
  */
 KalturaUiConfService.prototype.add = function(callback, uiConf){
-	kparams = new Object();
-	this.client.addParam(kparams, "uiConf", uiConf.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "uiConf", toParams(uiConf));
 	this.client.queueServiceActionCall("uiConf", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -835,9 +835,9 @@ KalturaUiConfService.prototype.add = function(callback, uiConf){
  * @return	KalturaUiConf.
  */
 KalturaUiConfService.prototype.update = function(callback, id, uiConf){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "uiConf", uiConf.toParams());
+	this.client.addParam(kparams, "uiConf", toParams(uiConf));
 	this.client.queueServiceActionCall("uiConf", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -848,7 +848,7 @@ KalturaUiConfService.prototype.update = function(callback, id, uiConf){
  * @return	KalturaUiConf.
  */
 KalturaUiConfService.prototype.get = function(callback, id){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("uiConf", "get", kparams);
 	if (!this.client.isMultiRequest())
@@ -859,8 +859,8 @@ KalturaUiConfService.prototype.get = function(callback, id){
  * @param	id	int		 (optional).
  * @return	.
  */
-KalturaUiConfService.prototype.delete = function(callback, id){
-	kparams = new Object();
+KalturaUiConfService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("uiConf", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -872,7 +872,7 @@ KalturaUiConfService.prototype.delete = function(callback, id){
  * @return	KalturaUiConf.
  */
 KalturaUiConfService.prototype.cloneAction = function(callback, id){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("uiConf", "clone", kparams);
 	if (!this.client.isMultiRequest())
@@ -889,11 +889,11 @@ KalturaUiConfService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("uiConf", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -916,7 +916,7 @@ KalturaUiConfService.prototype.listAction = function(callback, filter, pager){
 function KalturaPlaylistService(client){
 	this.init(client);
 }
-KalturaPlaylistService.prototype = new KalturaServiceBase();
+KalturaPlaylistService.inheritsFrom (KalturaServiceBase);
 /**
  * Add new playlist
  *	Note that all entries used in a playlist will become public and may appear in KalturaNetwork.
@@ -927,8 +927,8 @@ KalturaPlaylistService.prototype = new KalturaServiceBase();
 KalturaPlaylistService.prototype.add = function(callback, playlist, updateStats){
 	if(!updateStats)
 		updateStats = false;
-	kparams = new Object();
-	this.client.addParam(kparams, "playlist", playlist.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "playlist", toParams(playlist));
 	this.client.addParam(kparams, "updateStats", updateStats);
 	this.client.queueServiceActionCall("playlist", "add", kparams);
 	if (!this.client.isMultiRequest())
@@ -943,7 +943,7 @@ KalturaPlaylistService.prototype.add = function(callback, playlist, updateStats)
 KalturaPlaylistService.prototype.get = function(callback, id, version){
 	if(!version)
 		version = -1;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.addParam(kparams, "version", version);
 	this.client.queueServiceActionCall("playlist", "get", kparams);
@@ -961,9 +961,9 @@ KalturaPlaylistService.prototype.get = function(callback, id, version){
 KalturaPlaylistService.prototype.update = function(callback, id, playlist, updateStats){
 	if(!updateStats)
 		updateStats = false;
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "playlist", playlist.toParams());
+	this.client.addParam(kparams, "playlist", toParams(playlist));
 	this.client.addParam(kparams, "updateStats", updateStats);
 	this.client.queueServiceActionCall("playlist", "update", kparams);
 	if (!this.client.isMultiRequest())
@@ -974,8 +974,8 @@ KalturaPlaylistService.prototype.update = function(callback, id, playlist, updat
  * @param	id	string		 (optional).
  * @return	.
  */
-KalturaPlaylistService.prototype.delete = function(callback, id){
-	kparams = new Object();
+KalturaPlaylistService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("playlist", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -992,11 +992,11 @@ KalturaPlaylistService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("playlist", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1010,7 +1010,7 @@ KalturaPlaylistService.prototype.listAction = function(callback, filter, pager){
 KalturaPlaylistService.prototype.execute = function(callback, id, detailed){
 	if(!detailed)
 		detailed = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.addParam(kparams, "detailed", detailed);
 	this.client.queueServiceActionCall("playlist", "execute", kparams);
@@ -1027,7 +1027,7 @@ KalturaPlaylistService.prototype.execute = function(callback, id, detailed){
 KalturaPlaylistService.prototype.executeFromContent = function(callback, playlistType, playlistContent, detailed){
 	if(!detailed)
 		detailed = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "playlistType", playlistType);
 	this.client.addParam(kparams, "playlistContent", playlistContent);
 	this.client.addParam(kparams, "detailed", detailed);
@@ -1042,7 +1042,7 @@ KalturaPlaylistService.prototype.executeFromContent = function(callback, playlis
  * @return	KalturaPlaylist.
  */
 KalturaPlaylistService.prototype.getStatsFromContent = function(callback, playlistType, playlistContent){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "playlistType", playlistType);
 	this.client.addParam(kparams, "playlistContent", playlistContent);
 	this.client.queueServiceActionCall("playlist", "getStatsFromContent", kparams);
@@ -1063,7 +1063,7 @@ KalturaPlaylistService.prototype.getStatsFromContent = function(callback, playli
 function KalturaUserService(client){
 	this.init(client);
 }
-KalturaUserService.prototype = new KalturaServiceBase();
+KalturaUserService.inheritsFrom (KalturaServiceBase);
 /**
  * Adds a user to the Kaltura DB.
  *	Input param $id is the unique identifier in the partner's system.
@@ -1071,8 +1071,8 @@ KalturaUserService.prototype = new KalturaServiceBase();
  * @return	KalturaUser.
  */
 KalturaUserService.prototype.add = function(callback, user){
-	kparams = new Object();
-	this.client.addParam(kparams, "user", user.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "user", toParams(user));
 	this.client.queueServiceActionCall("user", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1084,9 +1084,9 @@ KalturaUserService.prototype.add = function(callback, user){
  * @return	KalturaUser.
  */
 KalturaUserService.prototype.update = function(callback, userId, user){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "userId", userId);
-	this.client.addParam(kparams, "user", user.toParams());
+	this.client.addParam(kparams, "user", toParams(user));
 	this.client.queueServiceActionCall("user", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1097,7 +1097,7 @@ KalturaUserService.prototype.update = function(callback, userId, user){
  * @return	KalturaUser.
  */
 KalturaUserService.prototype.get = function(callback, userId){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "userId", userId);
 	this.client.queueServiceActionCall("user", "get", kparams);
 	if (!this.client.isMultiRequest())
@@ -1108,8 +1108,8 @@ KalturaUserService.prototype.get = function(callback, userId){
  * @param	userId	string		 (optional).
  * @return	KalturaUser.
  */
-KalturaUserService.prototype.delete = function(callback, userId){
-	kparams = new Object();
+KalturaUserService.prototype.deleteAction = function(callback, userId){
+	var kparams = new Object();
 	this.client.addParam(kparams, "userId", userId);
 	this.client.queueServiceActionCall("user", "delete", kparams);
 	if (!this.client.isMultiRequest())
@@ -1126,11 +1126,11 @@ KalturaUserService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("user", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1150,7 +1150,7 @@ KalturaUserService.prototype.listAction = function(callback, filter, pager){
 function KalturaWidgetService(client){
 	this.init(client);
 }
-KalturaWidgetService.prototype = new KalturaServiceBase();
+KalturaWidgetService.inheritsFrom (KalturaServiceBase);
 /**
  * Add new widget, can be attached to entry or kshow
  *	SourceWidget is ignored..
@@ -1158,8 +1158,8 @@ KalturaWidgetService.prototype = new KalturaServiceBase();
  * @return	KalturaWidget.
  */
 KalturaWidgetService.prototype.add = function(callback, widget){
-	kparams = new Object();
-	this.client.addParam(kparams, "widget", widget.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "widget", toParams(widget));
 	this.client.queueServiceActionCall("widget", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1171,9 +1171,9 @@ KalturaWidgetService.prototype.add = function(callback, widget){
  * @return	KalturaWidget.
  */
 KalturaWidgetService.prototype.update = function(callback, id, widget){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "widget", widget.toParams());
+	this.client.addParam(kparams, "widget", toParams(widget));
 	this.client.queueServiceActionCall("widget", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1184,7 +1184,7 @@ KalturaWidgetService.prototype.update = function(callback, id, widget){
  * @return	KalturaWidget.
  */
 KalturaWidgetService.prototype.get = function(callback, id){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("widget", "get", kparams);
 	if (!this.client.isMultiRequest())
@@ -1197,8 +1197,8 @@ KalturaWidgetService.prototype.get = function(callback, id){
  * @return	KalturaWidget.
  */
 KalturaWidgetService.prototype.cloneAction = function(callback, widget){
-	kparams = new Object();
-	this.client.addParam(kparams, "widget", widget.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "widget", toParams(widget));
 	this.client.queueServiceActionCall("widget", "clone", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1214,11 +1214,11 @@ KalturaWidgetService.prototype.listAction = function(callback, filter, pager){
 		filter = null;
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (filter != null)
-		this.client.addParam(kparams, "filter", filter.toParams());
+		this.client.addParam(kparams, "filter", toParams(filter));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("widget", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1237,7 +1237,7 @@ KalturaWidgetService.prototype.listAction = function(callback, filter, pager){
 function KalturaSearchService(client){
 	this.init(client);
 }
-KalturaSearchService.prototype = new KalturaServiceBase();
+KalturaSearchService.inheritsFrom (KalturaServiceBase);
 /**
  * Search for media in one of the supported media providers.
  * @param	search	KalturaSearch		A KalturaSearch object contains the search keywords, media provider and media type (optional).
@@ -1247,10 +1247,10 @@ KalturaSearchService.prototype = new KalturaServiceBase();
 KalturaSearchService.prototype.search = function(callback, search, pager){
 	if(!pager)
 		pager = null;
-	kparams = new Object();
-	this.client.addParam(kparams, "search", search.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "search", toParams(search));
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("search", "search", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1262,8 +1262,8 @@ KalturaSearchService.prototype.search = function(callback, search, pager){
  * @return	KalturaSearchResult.
  */
 KalturaSearchService.prototype.getMediaInfo = function(callback, searchResult){
-	kparams = new Object();
-	this.client.addParam(kparams, "searchResult", searchResult.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "searchResult", toParams(searchResult));
 	this.client.queueServiceActionCall("search", "getMediaInfo", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1277,7 +1277,7 @@ KalturaSearchService.prototype.getMediaInfo = function(callback, searchResult){
  * @return	KalturaSearchResult.
  */
 KalturaSearchService.prototype.searchUrl = function(callback, mediaType, url){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "mediaType", mediaType);
 	this.client.addParam(kparams, "url", url);
 	this.client.queueServiceActionCall("search", "searchUrl", kparams);
@@ -1301,7 +1301,7 @@ KalturaSearchService.prototype.searchUrl = function(callback, mediaType, url){
 function KalturaPartnerService(client){
 	this.init(client);
 }
-KalturaPartnerService.prototype = new KalturaServiceBase();
+KalturaPartnerService.inheritsFrom (KalturaServiceBase);
 /**
  * Register to Kaltura's partner program.
  * @param	partner	KalturaPartner		 (optional).
@@ -1311,8 +1311,8 @@ KalturaPartnerService.prototype = new KalturaServiceBase();
 KalturaPartnerService.prototype.register = function(callback, partner, cmsPassword){
 	if(!cmsPassword)
 		cmsPassword = "";
-	kparams = new Object();
-	this.client.addParam(kparams, "partner", partner.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "partner", toParams(partner));
 	this.client.addParam(kparams, "cmsPassword", cmsPassword);
 	this.client.queueServiceActionCall("partner", "register", kparams);
 	if (!this.client.isMultiRequest())
@@ -1327,8 +1327,8 @@ KalturaPartnerService.prototype.register = function(callback, partner, cmsPasswo
 KalturaPartnerService.prototype.update = function(callback, partner, allowEmpty){
 	if(!allowEmpty)
 		allowEmpty = false;
-	kparams = new Object();
-	this.client.addParam(kparams, "partner", partner.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "partner", toParams(partner));
 	this.client.addParam(kparams, "allowEmpty", allowEmpty);
 	this.client.queueServiceActionCall("partner", "update", kparams);
 	if (!this.client.isMultiRequest())
@@ -1342,7 +1342,7 @@ KalturaPartnerService.prototype.update = function(callback, partner, allowEmpty)
  * @return	KalturaPartner.
  */
 KalturaPartnerService.prototype.getSecrets = function(callback, partnerId, adminEmail, cmsPassword){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "partnerId", partnerId);
 	this.client.addParam(kparams, "adminEmail", adminEmail);
 	this.client.addParam(kparams, "cmsPassword", cmsPassword);
@@ -1356,7 +1356,7 @@ KalturaPartnerService.prototype.getSecrets = function(callback, partnerId, admin
  * @return	KalturaPartner.
  */
 KalturaPartnerService.prototype.getInfo = function(callback){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.queueServiceActionCall("partner", "getInfo", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1378,7 +1378,7 @@ KalturaPartnerService.prototype.getUsage = function(callback, year, month, resol
 		month = 1;
 	if(!resolution)
 		resolution = "days";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "year", year);
 	this.client.addParam(kparams, "month", month);
 	this.client.addParam(kparams, "resolution", resolution);
@@ -1397,7 +1397,7 @@ KalturaPartnerService.prototype.getUsage = function(callback, year, month, resol
 function KalturaAdminUserService(client){
 	this.init(client);
 }
-KalturaAdminUserService.prototype = new KalturaServiceBase();
+KalturaAdminUserService.inheritsFrom (KalturaServiceBase);
 /**
  * Update admin user password and email.
  * @param	email	string		 (optional).
@@ -1411,7 +1411,7 @@ KalturaAdminUserService.prototype.updatepassword = function(callback, email, pas
 		newEmail = "";
 	if(!newPassword)
 		newPassword = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "email", email);
 	this.client.addParam(kparams, "password", password);
 	this.client.addParam(kparams, "newEmail", newEmail);
@@ -1426,7 +1426,7 @@ KalturaAdminUserService.prototype.updatepassword = function(callback, email, pas
  * @return	.
  */
 KalturaAdminUserService.prototype.resetPassword = function(callback, email){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "email", email);
 	this.client.queueServiceActionCall("adminUser", "resetPassword", kparams);
 	if (!this.client.isMultiRequest())
@@ -1439,7 +1439,7 @@ KalturaAdminUserService.prototype.resetPassword = function(callback, email){
  * @return	string.
  */
 KalturaAdminUserService.prototype.login = function(callback, email, password){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "email", email);
 	this.client.addParam(kparams, "password", password);
 	this.client.queueServiceActionCall("adminUser", "login", kparams);
@@ -1455,13 +1455,13 @@ KalturaAdminUserService.prototype.login = function(callback, email, password){
 function KalturaSystemService(client){
 	this.init(client);
 }
-KalturaSystemService.prototype = new KalturaServiceBase();
+KalturaSystemService.inheritsFrom (KalturaServiceBase);
 /**
  * .
  * @return	bool.
  */
 KalturaSystemService.prototype.ping = function(callback){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.queueServiceActionCall("system", "ping", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1477,7 +1477,7 @@ KalturaSystemService.prototype.ping = function(callback){
 function KalturaBulkUploadService(client){
 	this.init(client);
 }
-KalturaBulkUploadService.prototype = new KalturaServiceBase();
+KalturaBulkUploadService.inheritsFrom (KalturaServiceBase);
 /**
  * Add new bulk upload batch job.
  * @param	conversionProfileId	int		Convertion profile id to use for converting the current bulk (optional).
@@ -1485,7 +1485,7 @@ KalturaBulkUploadService.prototype = new KalturaServiceBase();
  * @return	KalturaBulkUpload.
  */
 KalturaBulkUploadService.prototype.add = function(callback, conversionProfileId, csvFileData){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "conversionProfileId", conversionProfileId);
 	kfiles = new Object();
 	this.client.addParam(kfiles, "csvFileData", csvFileData);
@@ -1499,7 +1499,7 @@ KalturaBulkUploadService.prototype.add = function(callback, conversionProfileId,
  * @return	KalturaBulkUpload.
  */
 KalturaBulkUploadService.prototype.get = function(callback, id){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("bulkUpload", "get", kparams);
 	if (!this.client.isMultiRequest())
@@ -1513,9 +1513,9 @@ KalturaBulkUploadService.prototype.get = function(callback, id){
 KalturaBulkUploadService.prototype.listAction = function(callback, pager){
 	if(!pager)
 		pager = null;
-	kparams = new Object();
+	var kparams = new Object();
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("bulkUpload", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1529,7 +1529,7 @@ KalturaBulkUploadService.prototype.listAction = function(callback, pager){
 function KalturaNotificationService(client){
 	this.init(client);
 }
-KalturaNotificationService.prototype = new KalturaServiceBase();
+KalturaNotificationService.inheritsFrom (KalturaServiceBase);
 /**
  * Return the entries for a specific entry id and type.
  * @param	entryId	string		 (optional).
@@ -1537,7 +1537,7 @@ KalturaNotificationService.prototype = new KalturaServiceBase();
  * @return	KalturaClientNotification.
  */
 KalturaNotificationService.prototype.getClientNotification = function(callback, entryId, type){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.addParam(kparams, "type", type);
 	this.client.queueServiceActionCall("notification", "getClientNotification", kparams);
@@ -1557,13 +1557,13 @@ KalturaNotificationService.prototype.getClientNotification = function(callback, 
 function KalturaReportService(client){
 	this.init(client);
 }
-KalturaReportService.prototype = new KalturaServiceBase();
+KalturaReportService.inheritsFrom (KalturaServiceBase);
 /**
  * report getGraph action allows to get a graph data for a specific report. .
  * @return	KalturaReportGraph.
  */
 KalturaReportService.prototype.getGraph = function(callback){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.queueServiceActionCall("report", "getGraph", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1581,9 +1581,9 @@ KalturaReportService.prototype.getGraphs = function(callback, reportType, report
 		dimension = "";
 	if(!objectIds)
 		objectIds = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "reportType", reportType);
-	this.client.addParam(kparams, "reportInputFilter", reportInputFilter.toParams());
+	this.client.addParam(kparams, "reportInputFilter", toParams(reportInputFilter));
 	this.client.addParam(kparams, "dimension", dimension);
 	this.client.addParam(kparams, "objectIds", objectIds);
 	this.client.queueServiceActionCall("report", "getGraphs", kparams);
@@ -1600,9 +1600,9 @@ KalturaReportService.prototype.getGraphs = function(callback, reportType, report
 KalturaReportService.prototype.getTotal = function(callback, reportType, reportInputFilter, objectIds){
 	if(!objectIds)
 		objectIds = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "reportType", reportType);
-	this.client.addParam(kparams, "reportInputFilter", reportInputFilter.toParams());
+	this.client.addParam(kparams, "reportInputFilter", toParams(reportInputFilter));
 	this.client.addParam(kparams, "objectIds", objectIds);
 	this.client.queueServiceActionCall("report", "getTotal", kparams);
 	if (!this.client.isMultiRequest())
@@ -1622,10 +1622,10 @@ KalturaReportService.prototype.getTable = function(callback, reportType, reportI
 		order = "";
 	if(!objectIds)
 		objectIds = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "reportType", reportType);
-	this.client.addParam(kparams, "reportInputFilter", reportInputFilter.toParams());
-	this.client.addParam(kparams, "pager", pager.toParams());
+	this.client.addParam(kparams, "reportInputFilter", toParams(reportInputFilter));
+	this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.addParam(kparams, "order", order);
 	this.client.addParam(kparams, "objectIds", objectIds);
 	this.client.queueServiceActionCall("report", "getTable", kparams);
@@ -1654,15 +1654,15 @@ KalturaReportService.prototype.getUrlForReportAsCsv = function(callback, reportT
 		order = "";
 	if(!objectIds)
 		objectIds = "";
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.addParam(kparams, "reportTitle", reportTitle);
 	this.client.addParam(kparams, "reportText", reportText);
 	this.client.addParam(kparams, "headers", headers);
 	this.client.addParam(kparams, "reportType", reportType);
-	this.client.addParam(kparams, "reportInputFilter", reportInputFilter.toParams());
+	this.client.addParam(kparams, "reportInputFilter", toParams(reportInputFilter));
 	this.client.addParam(kparams, "dimension", dimension);
 	if (pager != null)
-		this.client.addParam(kparams, "pager", pager.toParams());
+		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.addParam(kparams, "order", order);
 	this.client.addParam(kparams, "objectIds", objectIds);
 	this.client.queueServiceActionCall("report", "getUrlForReportAsCsv", kparams);
@@ -1679,15 +1679,15 @@ KalturaReportService.prototype.getUrlForReportAsCsv = function(callback, reportT
 function KalturaConversionProfileService(client){
 	this.init(client);
 }
-KalturaConversionProfileService.prototype = new KalturaServiceBase();
+KalturaConversionProfileService.inheritsFrom (KalturaServiceBase);
 /**
  * Add new conversion profile and set it as the current.
  * @param	conversionProfile	KalturaConversionProfile		 (optional).
  * @return	KalturaConversionProfile.
  */
 KalturaConversionProfileService.prototype.addCurrent = function(callback, conversionProfile){
-	kparams = new Object();
-	this.client.addParam(kparams, "conversionProfile", conversionProfile.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "conversionProfile", toParams(conversionProfile));
 	this.client.queueServiceActionCall("conversionProfile", "addCurrent", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1697,7 +1697,7 @@ KalturaConversionProfileService.prototype.addCurrent = function(callback, conver
  * @return	KalturaConversionProfile.
  */
 KalturaConversionProfileService.prototype.getCurrent = function(callback){
-	kparams = new Object();
+	var kparams = new Object();
 	this.client.queueServiceActionCall("conversionProfile", "getCurrent", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1713,7 +1713,7 @@ KalturaConversionProfileService.prototype.getCurrent = function(callback){
 function KalturaStatsService(client){
 	this.init(client);
 }
-KalturaStatsService.prototype = new KalturaServiceBase();
+KalturaStatsService.inheritsFrom (KalturaServiceBase);
 /**
  * Will write to the event log a single line representing the event
  *	KalturaStatsEvent $event.
@@ -1721,8 +1721,8 @@ KalturaStatsService.prototype = new KalturaServiceBase();
  * @return	.
  */
 KalturaStatsService.prototype.collect = function(callback, event){
-	kparams = new Object();
-	this.client.addParam(kparams, "event", event.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "event", toParams(event));
 	this.client.queueServiceActionCall("stats", "collect", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1733,8 +1733,8 @@ KalturaStatsService.prototype.collect = function(callback, event){
  * @return	KalturaCEError.
  */
 KalturaStatsService.prototype.reportKceError = function(callback, kalturaCEError){
-	kparams = new Object();
-	this.client.addParam(kparams, "kalturaCEError", kalturaCEError.toParams());
+	var kparams = new Object();
+	this.client.addParam(kparams, "kalturaCEError", toParams(kalturaCEError));
 	this.client.queueServiceActionCall("stats", "reportKceError", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
