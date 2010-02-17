@@ -8,6 +8,56 @@ function KalturaClient(config){
 KalturaClient.inheritsFrom (KalturaClientBase);
 /**
  * 
+ * @param KalturaAccessControlService
+ */
+KalturaClient.prototype.accessControl = null;
+/**
+ * 
+ * @param KalturaAdminconsoleService
+ */
+KalturaClient.prototype.adminconsole = null;
+/**
+ * 
+ * @param KalturaAdminUserService
+ */
+KalturaClient.prototype.adminUser = null;
+/**
+ * 
+ * @param KalturaBaseEntryService
+ */
+KalturaClient.prototype.baseEntry = null;
+/**
+ * 
+ * @param KalturaBulkUploadService
+ */
+KalturaClient.prototype.bulkUpload = null;
+/**
+ * 
+ * @param KalturaCategoryService
+ */
+KalturaClient.prototype.category = null;
+/**
+ * 
+ * @param KalturaConversionProfileService
+ */
+KalturaClient.prototype.conversionProfile = null;
+/**
+ * 
+ * @param KalturaDataService
+ */
+KalturaClient.prototype.data = null;
+/**
+ * 
+ * @param KalturaFlavorAssetService
+ */
+KalturaClient.prototype.flavorAsset = null;
+/**
+ * 
+ * @param KalturaFlavorParamsService
+ */
+KalturaClient.prototype.flavorParams = null;
+/**
+ * 
  * @param KalturaMediaService
  */
 KalturaClient.prototype.media = null;
@@ -18,14 +68,29 @@ KalturaClient.prototype.media = null;
 KalturaClient.prototype.mixing = null;
 /**
  * 
- * @param KalturaDataService
+ * @param KalturaNotificationService
  */
-KalturaClient.prototype.data = null;
+KalturaClient.prototype.notification = null;
 /**
  * 
- * @param KalturaBaseEntryService
+ * @param KalturaPartnerService
  */
-KalturaClient.prototype.baseEntry = null;
+KalturaClient.prototype.partner = null;
+/**
+ * 
+ * @param KalturaPlaylistService
+ */
+KalturaClient.prototype.playlist = null;
+/**
+ * 
+ * @param KalturaReportService
+ */
+KalturaClient.prototype.report = null;
+/**
+ * 
+ * @param KalturaSearchService
+ */
+KalturaClient.prototype.search = null;
 /**
  * 
  * @param KalturaSessionService
@@ -33,14 +98,29 @@ KalturaClient.prototype.baseEntry = null;
 KalturaClient.prototype.session = null;
 /**
  * 
+ * @param KalturaStatsService
+ */
+KalturaClient.prototype.stats = null;
+/**
+ * 
+ * @param KalturaSyndicationFeedService
+ */
+KalturaClient.prototype.syndicationFeed = null;
+/**
+ * 
+ * @param KalturaSystemService
+ */
+KalturaClient.prototype.system = null;
+/**
+ * 
  * @param KalturaUiConfService
  */
 KalturaClient.prototype.uiConf = null;
 /**
  * 
- * @param KalturaPlaylistService
+ * @param KalturaUploadService
  */
-KalturaClient.prototype.playlist = null;
+KalturaClient.prototype.upload = null;
 /**
  * 
  * @param KalturaUserService
@@ -53,49 +133,39 @@ KalturaClient.prototype.user = null;
 KalturaClient.prototype.widget = null;
 /**
  * 
- * @param KalturaSearchService
+ * @param KalturaXInternalService
  */
-KalturaClient.prototype.search = null;
+KalturaClient.prototype.xInternal = null;
 /**
  * 
- * @param KalturaPartnerService
+ * @param KalturaSystemUserService
  */
-KalturaClient.prototype.partner = null;
+KalturaClient.prototype.systemUser = null;
 /**
  * 
- * @param KalturaAdminUserService
+ * @param KalturaSystemPartnerService
  */
-KalturaClient.prototype.adminUser = null;
+KalturaClient.prototype.systemPartner = null;
 /**
  * 
- * @param KalturaSystemService
+ * @param KalturaFileSyncService
  */
-KalturaClient.prototype.system = null;
+KalturaClient.prototype.fileSync = null;
 /**
  * 
- * @param KalturaBulkUploadService
+ * @param KalturaFlavorParamsOutputService
  */
-KalturaClient.prototype.bulkUpload = null;
+KalturaClient.prototype.flavorParamsOutput = null;
 /**
  * 
- * @param KalturaNotificationService
+ * @param KalturaMediaInfoService
  */
-KalturaClient.prototype.notification = null;
+KalturaClient.prototype.mediaInfo = null;
 /**
  * 
- * @param KalturaReportService
+ * @param KalturaEntryAdminService
  */
-KalturaClient.prototype.report = null;
-/**
- * 
- * @param KalturaConversionProfileService
- */
-KalturaClient.prototype.conversionProfile = null;
-/**
- * 
- * @param KalturaStatsService
- */
-KalturaClient.prototype.stats = null;
+KalturaClient.prototype.entryAdmin = null;
 /**
  * The client constructor.
  * @param config the Kaltura configuration object holding partner credentials (type: KalturaConfiguration).
@@ -104,22 +174,36 @@ KalturaClient.prototype.init = function(config){
 	//call the super constructor:
 	KalturaClientBase.prototype.init.apply(this, arguments);
 	//initialize client services:
+	this.accessControl = new KalturaAccessControlService(this);
+	this.adminconsole = new KalturaAdminconsoleService(this);
+	this.adminUser = new KalturaAdminUserService(this);
+	this.baseEntry = new KalturaBaseEntryService(this);
+	this.bulkUpload = new KalturaBulkUploadService(this);
+	this.category = new KalturaCategoryService(this);
+	this.conversionProfile = new KalturaConversionProfileService(this);
+	this.data = new KalturaDataService(this);
+	this.flavorAsset = new KalturaFlavorAssetService(this);
+	this.flavorParams = new KalturaFlavorParamsService(this);
 	this.media = new KalturaMediaService(this);
 	this.mixing = new KalturaMixingService(this);
-	this.data = new KalturaDataService(this);
-	this.baseEntry = new KalturaBaseEntryService(this);
-	this.session = new KalturaSessionService(this);
-	this.uiConf = new KalturaUiConfService(this);
+	this.notification = new KalturaNotificationService(this);
+	this.partner = new KalturaPartnerService(this);
 	this.playlist = new KalturaPlaylistService(this);
+	this.report = new KalturaReportService(this);
+	this.search = new KalturaSearchService(this);
+	this.session = new KalturaSessionService(this);
+	this.stats = new KalturaStatsService(this);
+	this.syndicationFeed = new KalturaSyndicationFeedService(this);
+	this.system = new KalturaSystemService(this);
+	this.uiConf = new KalturaUiConfService(this);
+	this.upload = new KalturaUploadService(this);
 	this.user = new KalturaUserService(this);
 	this.widget = new KalturaWidgetService(this);
-	this.search = new KalturaSearchService(this);
-	this.partner = new KalturaPartnerService(this);
-	this.adminUser = new KalturaAdminUserService(this);
-	this.system = new KalturaSystemService(this);
-	this.bulkUpload = new KalturaBulkUploadService(this);
-	this.notification = new KalturaNotificationService(this);
-	this.report = new KalturaReportService(this);
-	this.conversionProfile = new KalturaConversionProfileService(this);
-	this.stats = new KalturaStatsService(this);
+	this.xInternal = new KalturaXInternalService(this);
+	this.systemUser = new KalturaSystemUserService(this);
+	this.systemPartner = new KalturaSystemPartnerService(this);
+	this.fileSync = new KalturaFileSyncService(this);
+	this.flavorParamsOutput = new KalturaFlavorParamsOutputService(this);
+	this.mediaInfo = new KalturaMediaInfoService(this);
+	this.entryAdmin = new KalturaEntryAdminService(this);
 }

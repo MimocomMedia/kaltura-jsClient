@@ -3,15 +3,8 @@
 		<title>JavaScript client library sandbox</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-		<!-- <script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/combine.php?type=javascript&files=KalturaJsUtils.js,KalturaClientBase.js,KalturaTypes.js,KalturaVO.js,KalturaClient.js,KalturaServices.js,ox.ajast.js"></script> -->
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/webtoolkit.md5.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/ox.ajast.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClientBase.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClient.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaTypes.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaVO.js"></script>
-		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaServices.js"></script>
-		
+		<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/combine.php"></script>
+
 		<link rel="stylesheet" type="text/css" href="playground_libs/flexigrid/css/flexigrid/flexigrid.css">
 		<script type="text/javascript" src="playground_libs/flexigrid/flexigrid.js"></script>
 
@@ -41,11 +34,16 @@
 			}
 
 			var secret = "";
-			var kConfig = new KalturaConfiguration(1);
-			var kClient = new KalturaClient(kConfig);
+			
+			var kConfig;
+			var kClient;
 
 			function startSession(){
+				$('#loadericon').show('slow');
 				secret = $('#adminsecret').val();
+				partnerid = $('#partnerid').val();
+				kConfig = new KalturaConfiguration(1);
+				kClient = new KalturaClient(kConfig);
 				kClient.session.start(sessionStarted, secret, "test_js_kcl", KalturaSessionType.ADMIN);
 			}
 			function sessionStarted(success, data) {
@@ -76,6 +74,8 @@
 				var d = buildGridDataProvider(p, data.totalCount, data.objects, 'id', ['id', 'name', 'tags', 'thumbnailUrl']);
 				writeLog('Grid populate: ' + d, d);
 				flexirep.flexAddData(d);
+				$('#applicationdiv').show('normal');
+				$('#loadericon').hide('fast');
 			}
 
 			var gridData = null;
@@ -114,8 +114,6 @@
 				writeLog('get new data: ', data);
 				if (kClient.ks) {
 					listEntries(currentPage, filterKey, filterValue, sortOrder, success, error);
-				} else {
-					startSession();
 				}
 			}
 
@@ -137,7 +135,11 @@
 			
 		</script>
 		<h2 style="color:#3300DD;">JavaScript Kcl playground</h2>
-		<strong><label for="adminsecret">Admin Secret: </label></strong><input type="text" id="adminsecret" value="5678"></input><br />
+		This is a sample usage of the Kaltura JavaScript client library.<br />
+		To use this in production, make sure the KS (Kaltura Session) is being generated at the server side.<br />
+		<strong><label for="adminsecret">Partner ID: </label></strong><input type="text" id="partnerid" value=""></input><br />
+		<strong><label for="adminsecret">Admin Secret: </label></strong><input type="text" id="adminsecret" value=""></input><br />
+		<button onclick="startSession();return false;">Start</button><img id="loadericon" style="display:none;" src="load.gif"/>
 		<div id="selectEntryDetails">
 			<h3 style="text-decoration: underline;">Selected Entry Details:</h3>
 			<strong><label for="selectedEntryId">Entry Id:</label></strong><span id="selectedEntryId"></span><br />
@@ -145,48 +147,49 @@
 			<strong><label for="selectedEntryTags">Tags:</label></strong><span id="selectedEntryTags"></span><br />
 			<strong><label for="selectedEntryThumbnail">Thumbnail:</label></strong><span id="selectedEntryThumbnail"></span>
 		</div>
-		<object id="kaltura_player" name="kaltura_player" 
-			type="application/x-shockwave-flash" allowFullScreen="true" allowNetworking="all" 
-			allowScriptAccess="always" height="330" width="400" 
-			data="http://www.kaltura.com/index.php/kwidget/cache_st/1266281114/wid/_7463/uiconf_id/48501/">
-			<param name="allowFullScreen" value="true" />
-			<param name="allowNetworking" value="all" />
-			<param name="allowScriptAccess" value="always" />
-			<param name="bgcolor" value="#000000" />
-			<param name="flashVars" value="&externalInterfaceDisabled=false" />
-			<param name="movie" value="http://www.kaltura.com/index.php/kwidget/cache_st/1266281114/wid/_7463/uiconf_id/48501/" />
-		</object>
-		<br /><br />
-		<table id="flex1" style="display:none"></table>
-		<script type="text/javascript">
-			var flexirep = $("#flex1").flexigrid
-			({
-				dataType: 'json',
-				url: 'a',
-				colModel : [
-					{display: 'Id', name : 'id', sortable : false, align: 'center', width:'80'},
-					{display: 'Name', name : 'name', sortable : true, align: 'center', width:'160'},
-					{display: 'Tags', name : 'tags', sortable : false, align: 'center', width:'120'},
-					{display: 'Thumbnail', name : 'thumbnailUrl', sortable : false, align: 'center', width:'200'}
-					],
-				searchitems : [
-					{display: 'Id', name : 'idIn', isdefault: true},
-					{display: 'Name', name : 'nameLike'},
-					{display: 'Entry Type', name : 'typeEqual'}
-					],
-				sortname: "name",
-				sortorder: "asc",
-				usepager: true,
-				showTableToggleBtn: true,
-				title: 'Entries',
-				useRp: false,
-				rp: 10,
-				width: 700,
-				height: 200,
-				getDataProvider: getDataProvider,
-				singleSelect: true,
-				cellClick: cellClick
-			});	
-		</script>
+		<div id="applicationdiv" style="display:none;">
+			<object style="float:left;margin-right:25px;" id="kaltura_player" name="kaltura_player" 
+				type="application/x-shockwave-flash" allowFullScreen="true" allowNetworking="all" 
+				allowScriptAccess="always" height="330" width="400" 
+				data="http://www.kaltura.com/index.php/kwidget/cache_st/1266281114/wid/_7463/uiconf_id/48501/">
+				<param name="allowFullScreen" value="true" />
+				<param name="allowNetworking" value="all" />
+				<param name="allowScriptAccess" value="always" />
+				<param name="bgcolor" value="#000000" />
+				<param name="flashVars" value="&externalInterfaceDisabled=false&autoPlay=true&entryId=bnmdraxxu0" />
+				<param name="movie" value="http://www.kaltura.com/index.php/kwidget/cache_st/1266281114/wid/_7463/uiconf_id/48501/" />
+			</object>
+			<table id="flex1" style="display:none"></table>
+			<script type="text/javascript">
+				var flexirep = $("#flex1").flexigrid
+				({
+					dataType: 'json',
+					url: 'a',
+					colModel : [
+						{display: 'Id', name : 'id', sortable : false, align: 'center', width:'80'},
+						{display: 'Name', name : 'name', sortable : true, align: 'center', width:'160'},
+						{display: 'Tags', name : 'tags', sortable : false, align: 'center', width:'120'},
+						{display: 'Thumbnail', name : 'thumbnailUrl', sortable : false, align: 'center', width:'200'}
+						],
+					searchitems : [
+						{display: 'Id', name : 'idIn'},
+						{display: 'Name', name : 'nameLike'},
+						{display: 'Entry Type', name : 'typeEqual', isdefault: true}
+						],
+					sortname: "name",
+					sortorder: "asc",
+					usepager: true,
+					showTableToggleBtn: true,
+					title: 'Entries',
+					useRp: false,
+					rp: 10,
+					width: 700,
+					height: 200,
+					getDataProvider: getDataProvider,
+					singleSelect: true,
+					cellClick: cellClick
+				});	
+			</script>
+		</div>
 	</body>
 </html>
