@@ -50,7 +50,8 @@
 			 onChangeSort: false,
 			 onSuccess: false,
 			 onSubmit: false, // using a custom populate function
-			 getDataProvider: false
+			 getDataProvider: false,
+			 cellClick: false
 		  }, p);
 		  		
 
@@ -733,6 +734,7 @@
 										var obj = (e.target || e.srcElement); if (obj.href || obj.type) return true;
 										$(this).toggleClass('trSelected');
 										if (p.singleSelect) $(this).siblings().removeClass('trSelected');
+										if (p.cellClick) p.cellClick(e);
 									}
 							)
 							.mousedown(

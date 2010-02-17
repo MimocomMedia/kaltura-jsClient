@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Kaltura Partner Registeration Template</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery.validate/1.6/jquery.validate.min.js"></script>
+<script type="text/javascript" src="jquery.form.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/webtoolkit.md5.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/ox.ajast.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClientBase.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaClient.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaTypes.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaVO.js"></script>
+<script type="text/javascript" src="http://dev.kcl_js/generator/output/jsClient/js/KalturaServices.js"></script>
+<link rel="stylesheet" type="text/css" media="all" href="http://corp.kaltura.com/css/corp_layout.css?r=27130" />
+<link rel="stylesheet" type="text/css" media="all" href="http://corp.kaltura.com/css/corp.css?r=27139" />
+</head>
+<body>
+
+<script type="text/javascript">
+function registerResult (success, data) {
+	$('#loadericon').hide('fast');
+	if (data.code) {
+		$('#resultdiv').text(data.message);
+	} else {
+		$('#resultdiv').html('<h2>Welcome '+data.adminName+'</h2>' +
+							'<p style="text-decoration:underline;">Your new Partner info is below:</p>'+
+							'<p><strong>Partner Id:</strong> ' + data.id + '<br />' +
+							'<strong>KMC Password:</strong> ' + data.cmsPassword + '<br />' +
+							'<strong>Web Secret:</strong> ' + data.secret + '<br />' +
+							'<strong>Admin Secret:</strong> ' + data.adminSecret + '<br />' +
+							'<p>You may login to the <a href="'+kConfig.serviceUrl+'/index.php/kmc">Kaltura Management Console</a> to manage your account using your email and KMC password above.</p>'
+						);
+	}
+}
+var kConfig;
+var kClient;
+
+$(function() {
+
+    // bind to the form's submit event 
+    $('#signup_form').submit(function() { 
+		$('#loadericon').show('slow');
+		kConfig = new KalturaConfiguration(-1);
+		kConfig.serviceUrl = $('#kalturaserver').val();
+		kClient = new KalturaClient(kConfig);
+		var kPartner = new KalturaPartner ();
+		kPartner.name = $('#name').val();
+		kPartner.website = $('#URL').val();
+		kPartner.adminName = $('#name').val();
+		kPartner.phone = $('#phone').val();
+		kPartner.commercialUse = 'non-commercial_use';
+		kPartner.type = 1;
+		/*	Kaltura Partner Types:
+		 * 		1:KMC
+		 * 		100:MediaWiki
+		 * 		101:WordPress
+		 * 		102:Drupal
+		 * 		103:DekiWiki (MindTouch)
+		 * 		104:Moodle
+		 * 		105:KalturaCE
+		 * 		106:Joomla
+		 * 		
+		 * 		1000:Elgg 
+		 * 		1001:Alfresco
+		 * 		1002:BuddyPress
+		 * 		1003:TikiWiki
+		 * 		1004:GoogleWave
+		 * 		1005:RemixSite
+		 * 		1006:MiniSite
+		*/
+		kPartner.adminEmail = $('#email').val();
+		kPartner.description = $('#campaign').val() + '|' + $('#description').val();
+		if ($('#website_content').val())
+			kPartner.contentCategories = $('#website_content').val().join(',');
+		else
+			kPartner.contentCategories = '';
+		kPartner.describeYourself = $('#describe_yourself').val();
+		kPartner.adultContent = $("input[name='adult_content']:checked").val();
+		kClient.partner.register (registerResult, kPartner, null);
+        return false; 
+    }); 
+	
+    // validate signup form on keyup and submit 
+    var validator = $("#signup_form").validate({ 
+        rules: { 
+            name: "required",
+			kalturaserver: {
+				required: true,
+				url: true
+			},
+            email: { 
+                required: true, 
+                email: true
+            },
+			describe_yourself: "required",
+			phone: {
+				required: true,
+				rangelength: [10, 19]
+			},
+			URL: {
+				required: true//,
+				//url: true
+			},
+			website_content: "required",
+			description: {
+				required: true,
+				maxlength: 300
+			},
+			adult_content: "required",
+			accept_terms: "required" 
+        },
+        messages: { 
+            name: "Please enter your name",
+			kalturaserver: {
+				required: "Please enter the address of the Kaltura Server to register with",
+				url: "Please enter a valid Kaltura Server url"
+			},
+            phone: {
+				required: "Please enter a telephone number",
+				rangelength: "Please enter a valid telephone number"
+			},
+            email: {
+                required: "Please enter your email",
+                email: "Please enter a valid email address"
+            },
+			describe_yourself: "Please describe yourself",
+			URL: {
+				required: "Please enter your website's address",
+				url: "Please enter a valid url"
+			},
+			website_content: "required",
+			description: {
+				required: "required",
+				maxlength: "No more then 300 characters please"
+			},
+			adult_content: "required",
+			accept_terms: "You cannot sign up unless you agree to our terms" 
+        }, 
+        // set this class to error-labels to indicate valid fields 
+        success: function(label) { 
+            // set as text for IE 
+            label.html(" ").addClass("checked"); 
+        }
+    });
+}); 
+ 
+</script>
+
+<div id="wrap">
+<div class="innerpage formPage signup" id="contWrap">
+<div class="clearfix" id="row1">
+	<div class="col1">
+		<h1>Kaltura Online Video Platform Registration</h1>
+		<p>To use the Kaltura Platform features, you need to have a valid Partner ID with the Kaltura Server.</p>
+		<p>You can either user the Kaltura.com hosted edition or a Kaltura server of your choice (Self hosted CE or Enterprise). The deafult deployment in the form below is the Kaltura.com hosted edition, should you want to use a different Kaltura deployment, please enter the url of the Kaltura server you wish to use.</p>
+		<p>Signing up with the Kaltura.com hosted edition, provide you with a free trial account.<br />
+		Your trial account includes 10GB of free hosting and streaming. &nbsp; We will notify you as you approach the trial account limit so that you can seamlessly upgrade to the edition of your choice, without losing the settings and content in your trial account.</p>
+		<p>You can also talk to our sales team at  +1 (949) 713-3370 or <a href="/about/contact">write us</a> and we’ll get back to you.</p>
+		<h2>Enter your details below to register:</h2>
+		<form method="post" action="dosignup" id="signup_form" name="signup_form"> 
+			<input type="hidden" value="Elgg" name="campaign" id="campaign" />
+			<fieldset>
+			 <legend>Your Info</legend>
+			 <div class="item">
+				<label for="name">*Name:</label>
+				<input type="text" value="" name="name" id="name">
+			 </div>
+			 <div class="item">
+				<label for="name">*Kaltura Server Url:</label>
+				<input type="text" value="http://www.kaltura.com" name="kalturaserver" id="kalturaserver">
+			 </div>
+			 <div class="item">
+				<label for="company">Company:</label>
+				<input type="text" value="" name="company" id="company">
+			 </div>
+			 <div class="item">
+				<label for="email">*Email:</label>
+				<input type="text" value="" name="email" id="email">
+			 </div>
+			 <div class="item">
+				<label for="phone">*Phone:</label>
+				<input type="text" value="" name="phone" id="phone">
+			 </div>
+			<div class="item">
+				<label for="describe_yourself">*Describe yourself:</label>
+				<select name="describe_yourself" id="describe_yourself">
+				  <option value="">Please select...</option>
+						<option value="Integrator/Web developer">Integrator/Web developer</option>
+					<option value="Ad Agency">Ad Agency</option>
+					<option value="Kaltura Plugin/Extension/Module Distributor">Kaltura Plugin/Extension/Module Distributor</option>
+					<option value="Social Network">Social Network</option>
+					<option value="Personal Site">Personal Site</option>
+					<option value="Corporate Site">Corporate Site</option>
+					<option value="E-Commerce">E-Commerce</option>
+					<option value="E-Learning">E-Learning</option>
+					<option value="Media Company/ Producer">Media Company/ Producer</option>
+					<option value="Other">Other</option>
+				</select>			
+			</div>
+			</fieldset>
+			<fieldset>
+			 <legend>Website Info</legend>
+			 <div class="item">
+				<label for="URL">*Website url:</label>
+				<input type="text" value="" name="URL" id="URL">
+			 </div>
+			<div class="item">
+			  <label for="website_content">*Website content:</label>
+				<select size="4" multiple="multiple" name="website_content[]" id="website_content">
+				 <optgroup label="select all that apply">
+				  <option value="Arts &amp; Literature">Arts &amp; Literature</option>
+				  <option value="Automotive">Automotive</option>
+				  <option value="Business">Business</option>
+				  <option value="Comedy">Comedy</option>
+				  <option value="Education">Education</option>
+				  <option value="Entertainment">Entertainment</option>
+				  <option value="Film &amp; Animation">Film &amp; Animation</option>
+				  <option value="Gaming">Gaming</option>
+				  <option value="Howto &amp; Style">Howto &amp; Style</option>
+				  <option value="Lifestyle">Lifestyle</option>
+				  <option value="Men">Men</option>
+				  <option value="Music">Music</option>
+				  <option value="News &amp; Politics">News &amp; Politics</option>
+				  <option value="Nonprofits &amp; Activism">Nonprofits &amp; Activism</option>
+				  <option value="People &amp; Blogs">People &amp; Blogs</option>
+				  <option value="Pets &amp; Animals">Pets &amp; Animals</option>
+				  <option value="Science &amp; Technology">Science &amp; Technology</option>
+				  <option value="Sports">Sports</option>
+				  <option value="Travel &amp; Events">Travel &amp; Events</option>
+				  <option value="Women">Women</option>
+				  <option value="N/A">N/A</option>
+				 </optgroup>
+				</select>			
+			</div>
+			<div class="item adult">
+				<label for="adult_content">*Will you display adult&nbsp;content?</label>
+				<input type="radio" class="checkbox" value="yes" name="adult_content"> Yes<br>
+				<input type="radio" class="checkbox" value="no" name="adult_content"> No
+			</div>
+			<div class="item">
+				<label for="description">*How do you plan to use Kaltura’s video platform:</label>
+				<textarea name="description" id="description"></textarea>
+			</div>
+		   </fieldset>
+           <a name="verify"></a>
+		   <fieldset id="terms">
+		   <label for="accept_terms"><input type="checkbox" class="checkbox" name="accept_terms" id="accept_terms"> I accept <a target="_blank" href="/terms_of_use">Terms of Use</a></label>
+			<button id="submit_btn" name="submit_btn" type="submit"><div>Sign&nbsp;Up</div></button>
+			</fieldset>
+			<img id="loadericon" style="display:none;" src="load.gif"/>
+	  </form>
+	  <div id="resultdiv"></div>
+	</div>
+</div>
+</div>
+</div>
+</body>
+</html>
