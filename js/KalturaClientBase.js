@@ -230,7 +230,7 @@ function IKalturaLogger()
 {
 }
 IKalturaLogger.prototype.log = function(msg){
-	if (console.log){
+	if (console && console.log){
 		console.log(msg);
 	}
 };
@@ -369,7 +369,7 @@ KalturaClientBase.prototype.signature = function(params)
 KalturaClientBase.prototype.doHttpRequest = function (callCompletedCallback, url, params, files)
 {
 	url += '&' + http_build_query(params);
-	OX.AJAST.call(url, "callback", callCompletedCallback, 5000, false);
+	OX.AJAST.call(url, "callback", callCompletedCallback, 20000, false);
 };
 
 /**
