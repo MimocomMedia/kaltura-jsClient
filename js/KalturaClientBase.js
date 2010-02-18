@@ -86,7 +86,7 @@ function addIfNotNull(obj, params, paramName, paramValue)
 {
 	if (paramValue != null) {
 		if(paramValue instanceof KalturaObjectBase) {
-			params[paramName] = paramValue.toParams();
+			params[paramName] = toParams(paramValue);
 		} else {
 			params[paramName] = paramValue;
 		}
