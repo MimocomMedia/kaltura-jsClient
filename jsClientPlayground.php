@@ -3,7 +3,7 @@
 		<title>JavaScript client library sandbox</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-		<script type="text/javascript" src="combinedKalturaJsLib.php"></script>
+		<script type="text/javascript" src="kaltura.min.js.php"></script>
 
 		<link rel="stylesheet" type="text/css" href="playground_libs/flexigrid/css/flexigrid/flexigrid.css">
 		<script type="text/javascript" src="playground_libs/flexigrid/flexigrid.js"></script>
