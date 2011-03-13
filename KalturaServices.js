@@ -149,12 +149,16 @@ KalturaAdminUserService.prototype.resetPassword = function(callback, email){
  *	.
  * @param	email	string		 (optional).
  * @param	password	string		 (optional).
+ * @param	partnerId	int		 (optional).
  * @return	string.
  */
-KalturaAdminUserService.prototype.login = function(callback, email, password){
+KalturaAdminUserService.prototype.login = function(callback, email, password, partnerId){
+	if(!partnerId)
+		partnerId = "";
 	var kparams = new Object();
 	this.client.addParam(kparams, "email", email);
 	this.client.addParam(kparams, "password", password);
+	this.client.addParam(kparams, "partnerId", partnerId);
 	this.client.queueServiceActionCall("adminUser", "login", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -920,6 +924,8 @@ KalturaEmailIngestionProfileService.prototype.addMediaEntry = function(callback,
  *	.
  * @action	getByEntryId	Get Flavor Assets for Entry
  *	.
+ * @action	list	List Flavor Assets by filter and pager
+ *	.
  * @action	getWebPlayableByEntryId	Get web playable Flavor Assets for Entry
  *	.
  * @action	convert	Add and convert new Flavor Asset for Entry with specific Flavor Params
@@ -960,6 +966,27 @@ KalturaFlavorAssetService.prototype.getByEntryId = function(callback, entryId){
 	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("flavorAsset", "getByEntryId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List Flavor Assets by filter and pager
+ *	.
+ * @param	filter	KalturaAssetFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaFlavorAssetListResponse.
+ */
+KalturaFlavorAssetService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("flavorAsset", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -1021,11 +1048,15 @@ KalturaFlavorAssetService.prototype.deleteAction = function(callback, id){
  * Get download URL for the Flavor Asset
  *	.
  * @param	id	string		 (optional).
+ * @param	useCdn	bool		 (optional, default: false).
  * @return	string.
  */
-KalturaFlavorAssetService.prototype.getDownloadUrl = function(callback, id){
+KalturaFlavorAssetService.prototype.getDownloadUrl = function(callback, id, useCdn){
+	if(!useCdn)
+		useCdn = false;
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "useCdn", useCdn);
 	this.client.queueServiceActionCall("flavorAsset", "getDownloadUrl", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
@@ -1295,10 +1326,6 @@ KalturaLiveStreamService.prototype.updateOfflineThumbnailFromUrl = function(call
 /**
  *Class definition for the Kaltura service: media.
  * The available service actions:
- * @action	addFromBulk	Adds new media entry by importing an HTTP or FTP URL.
- *	The entry will be queued for import and then for conversion.
- *	This action should be exposed only to the batches
- *	.
  * @action	addFromUrl	Adds new media entry by importing an HTTP or FTP URL.
  *	The entry will be queued for import and then for conversion.
  *	.
@@ -1327,16 +1354,6 @@ KalturaLiveStreamService.prototype.updateOfflineThumbnailFromUrl = function(call
  *	.
  * @action	upload	Upload a media file to Kaltura, then the file can be used to create a media entry. 
  *	.
- * @action	updateThumbnail	Update media entry thumbnail by a specified time offset (In seconds)
- *	If flavor params id not specified, source flavor will be used by default
- *	.
- * @action	updateThumbnailFromSourceEntry	Update media entry thumbnail from a different entry by a specified time offset (In seconds)
- *	If flavor params id not specified, source flavor will be used by default
- *	.
- * @action	updateThumbnailJpeg	Update media entry thumbnail using a raw jpeg file
- *	.
- * @action	updateThumbnailFromUrl	Update entry thumbnail using url
- *	.
  * @action	requestConversion	Request a new conversion job, this can be used to convert the media entry to a different format
  *	.
  * @action	flag	Flag inappropriate media entry for moderation
@@ -1353,25 +1370,6 @@ function KalturaMediaService(client){
 	this.init(client);
 }
 KalturaMediaService.inheritsFrom (KalturaServiceBase);
-/**
- * Adds new media entry by importing an HTTP or FTP URL.
- *	The entry will be queued for import and then for conversion.
- *	This action should be exposed only to the batches
- *	.
- * @param	mediaEntry	KalturaMediaEntry		Media entry metadata   (optional).
- * @param	url	string		An HTTP or FTP URL (optional).
- * @param	bulkUploadId	int		The id of the bulk upload job (optional).
- * @return	KalturaMediaEntry.
- */
-KalturaMediaService.prototype.addFromBulk = function(callback, mediaEntry, url, bulkUploadId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "mediaEntry", toParams(mediaEntry));
-	this.client.addParam(kparams, "url", url);
-	this.client.addParam(kparams, "bulkUploadId", bulkUploadId);
-	this.client.queueServiceActionCall("media", "addFromBulk", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
 /**
  * Adds new media entry by importing an HTTP or FTP URL.
  *	The entry will be queued for import and then for conversion.
@@ -1599,79 +1597,6 @@ KalturaMediaService.prototype.upload = function(callback, fileData){
 	kfiles = new Object();
 	this.client.addParam(kfiles, "fileData", fileData);
 	this.client.queueServiceActionCall("media", "upload", kparams, kfiles);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update media entry thumbnail by a specified time offset (In seconds)
- *	If flavor params id not specified, source flavor will be used by default
- *	.
- * @param	entryId	string		Media entry id (optional).
- * @param	timeOffset	int		Time offset (in seconds) (optional).
- * @param	flavorParamsId	int		The flavor params id to be used (optional).
- * @return	KalturaMediaEntry.
- */
-KalturaMediaService.prototype.updateThumbnail = function(callback, entryId, timeOffset, flavorParamsId){
-	if(!flavorParamsId)
-		flavorParamsId = "";
-	var kparams = new Object();
-	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "timeOffset", timeOffset);
-	this.client.addParam(kparams, "flavorParamsId", flavorParamsId);
-	this.client.queueServiceActionCall("media", "updateThumbnail", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update media entry thumbnail from a different entry by a specified time offset (In seconds)
- *	If flavor params id not specified, source flavor will be used by default
- *	.
- * @param	entryId	string		Media entry id (optional).
- * @param	sourceEntryId	string		Media entry id (optional).
- * @param	timeOffset	int		Time offset (in seconds) (optional).
- * @param	flavorParamsId	int		The flavor params id to be used (optional).
- * @return	KalturaMediaEntry.
- */
-KalturaMediaService.prototype.updateThumbnailFromSourceEntry = function(callback, entryId, sourceEntryId, timeOffset, flavorParamsId){
-	if(!flavorParamsId)
-		flavorParamsId = "";
-	var kparams = new Object();
-	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "sourceEntryId", sourceEntryId);
-	this.client.addParam(kparams, "timeOffset", timeOffset);
-	this.client.addParam(kparams, "flavorParamsId", flavorParamsId);
-	this.client.queueServiceActionCall("media", "updateThumbnailFromSourceEntry", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update media entry thumbnail using a raw jpeg file
- *	.
- * @param	entryId	string		Media entry id (optional).
- * @param	fileData	file		Jpeg file data (optional).
- * @return	KalturaMediaEntry.
- */
-KalturaMediaService.prototype.updateThumbnailJpeg = function(callback, entryId, fileData){
-	var kparams = new Object();
-	this.client.addParam(kparams, "entryId", entryId);
-	kfiles = new Object();
-	this.client.addParam(kfiles, "fileData", fileData);
-	this.client.queueServiceActionCall("media", "updateThumbnailJpeg", kparams, kfiles);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update entry thumbnail using url
- *	.
- * @param	entryId	string		Media entry id (optional).
- * @param	url	string		file url (optional).
- * @return	KalturaBaseEntry.
- */
-KalturaMediaService.prototype.updateThumbnailFromUrl = function(callback, entryId, url){
-	var kparams = new Object();
-	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "url", url);
-	this.client.queueServiceActionCall("media", "updateThumbnailFromUrl", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -2112,6 +2037,207 @@ KalturaPartnerService.prototype.getUsage = function(callback, year, month, resol
 	this.client.addParam(kparams, "month", month);
 	this.client.addParam(kparams, "resolution", resolution);
 	this.client.queueServiceActionCall("partner", "getUsage", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: permissionItem.
+ * The available service actions:
+ * @action	add	Allows you to add a new KalturaPermissionItem object
+ *	.
+ * @action	get	Retrieve a KalturaPermissionItem object by ID
+ *	.
+ * @action	update	Update an existing KalturaPermissionItem object
+ *	.
+ * @action	delete	Mark the KalturaPermissionItem object as deleted
+ *	.
+ * @action	list	List KalturaPermissionItem objects
+ *	.
+*/
+function KalturaPermissionItemService(client){
+	this.init(client);
+}
+KalturaPermissionItemService.inheritsFrom (KalturaServiceBase);
+/**
+ * Allows you to add a new KalturaPermissionItem object
+ *	.
+ * @param	permissionItem	KalturaPermissionItem		 (optional).
+ * @return	KalturaPermissionItem.
+ */
+KalturaPermissionItemService.prototype.add = function(callback, permissionItem){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionItem", toParams(permissionItem));
+	this.client.queueServiceActionCall("permissionItem", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve a KalturaPermissionItem object by ID
+ *	.
+ * @param	permissionItemId	int		 (optional).
+ * @return	KalturaPermissionItem.
+ */
+KalturaPermissionItemService.prototype.get = function(callback, permissionItemId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionItemId", permissionItemId);
+	this.client.queueServiceActionCall("permissionItem", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update an existing KalturaPermissionItem object
+ *	.
+ * @param	permissionItemId	int		 (optional).
+ * @param	permissionItem	KalturaPermissionItem		Id (optional).
+ * @return	KalturaPermissionItem.
+ */
+KalturaPermissionItemService.prototype.update = function(callback, permissionItemId, permissionItem){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionItemId", permissionItemId);
+	this.client.addParam(kparams, "permissionItem", toParams(permissionItem));
+	this.client.queueServiceActionCall("permissionItem", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Mark the KalturaPermissionItem object as deleted
+ *	.
+ * @param	permissionItemId	int		 (optional).
+ * @return	KalturaPermissionItem.
+ */
+KalturaPermissionItemService.prototype.deleteAction = function(callback, permissionItemId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionItemId", permissionItemId);
+	this.client.queueServiceActionCall("permissionItem", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List KalturaPermissionItem objects
+ *	.
+ * @param	filter	KalturaPermissionItemFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaPremissionItemListResponse.
+ */
+KalturaPermissionItemService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("permissionItem", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: permission.
+ * The available service actions:
+ * @action	add	Allows you to add a new KalturaPermission object
+ *	.
+ * @action	get	Retrieve a KalturaPermission object by ID
+ *	.
+ * @action	update	Update an existing KalturaPermission object
+ *	.
+ * @action	delete	Mark the KalturaPermission object as deleted
+ *	.
+ * @action	list	List KalturaPermission objects
+ *	.
+ * @action	getCurrentPermissions	Return a list of current sessions's allowed permission names
+ *	.
+*/
+function KalturaPermissionService(client){
+	this.init(client);
+}
+KalturaPermissionService.inheritsFrom (KalturaServiceBase);
+/**
+ * Allows you to add a new KalturaPermission object
+ *	.
+ * @param	permission	KalturaPermission		 (optional).
+ * @return	KalturaPermission.
+ */
+KalturaPermissionService.prototype.add = function(callback, permission){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permission", toParams(permission));
+	this.client.queueServiceActionCall("permission", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve a KalturaPermission object by ID
+ *	.
+ * @param	permissionName	string		 (optional).
+ * @return	KalturaPermission.
+ */
+KalturaPermissionService.prototype.get = function(callback, permissionName){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionName", permissionName);
+	this.client.queueServiceActionCall("permission", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update an existing KalturaPermission object
+ *	.
+ * @param	permissionName	string		 (optional).
+ * @param	permission	KalturaPermission		Name (optional).
+ * @return	KalturaPermission.
+ */
+KalturaPermissionService.prototype.update = function(callback, permissionName, permission){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionName", permissionName);
+	this.client.addParam(kparams, "permission", toParams(permission));
+	this.client.queueServiceActionCall("permission", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Mark the KalturaPermission object as deleted
+ *	.
+ * @param	permissionName	string		 (optional).
+ * @return	KalturaPermission.
+ */
+KalturaPermissionService.prototype.deleteAction = function(callback, permissionName){
+	var kparams = new Object();
+	this.client.addParam(kparams, "permissionName", permissionName);
+	this.client.queueServiceActionCall("permission", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List KalturaPermission objects
+ *	.
+ * @param	filter	KalturaPermissionFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaPermissionListResponse.
+ */
+KalturaPermissionService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("permission", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Return a list of current sessions's allowed permission names
+ *	.
+ * @return	string.
+ */
+KalturaPermissionService.prototype.getCurrentPermissions = function(callback){
+	var kparams = new Object();
+	this.client.queueServiceActionCall("permission", "getCurrentPermissions", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -2559,7 +2685,7 @@ KalturaSessionService.inheritsFrom (KalturaServiceBase);
  * @param	secret	string		Remember to provide the correct secret according to the sessionType you want (optional).
  * @param	userId	string		 (optional).
  * @param	type	int		Regular session or Admin session (optional, enum: KalturaSessionType).
- * @param	partnerId	int		 (optional, default: -1).
+ * @param	partnerId	int		 (optional).
  * @param	expiry	int		KS expiry time in seconds (optional, default: 86400).
  * @param	privileges	string		 (optional).
  * @return	string.
@@ -2570,7 +2696,7 @@ KalturaSessionService.prototype.start = function(callback, secret, userId, type,
 	if(!type)
 		type = 0;
 	if(!partnerId)
-		partnerId = -1;
+		partnerId = "";
 	if(!expiry)
 		expiry = 86400;
 	if(!privileges)
@@ -2605,7 +2731,7 @@ KalturaSessionService.prototype.end = function(callback){
  * @param	impersonatedPartnerId	int		 (optional).
  * @param	userId	string		 (optional).
  * @param	type	int		Regular session or Admin session (optional, enum: KalturaSessionType).
- * @param	partnerId	int		 (optional, default: -1).
+ * @param	partnerId	int		 (optional).
  * @param	expiry	int		KS expiry time in seconds (optional, default: 86400).
  * @param	privileges	string		 (optional).
  * @return	string.
@@ -2616,7 +2742,7 @@ KalturaSessionService.prototype.impersonate = function(callback, secret, imperso
 	if(!type)
 		type = 0;
 	if(!partnerId)
-		partnerId = -1;
+		partnerId = "";
 	if(!expiry)
 		expiry = 86400;
 	if(!privileges)
@@ -2849,6 +2975,281 @@ KalturaSystemService.inheritsFrom (KalturaServiceBase);
 KalturaSystemService.prototype.ping = function(callback){
 	var kparams = new Object();
 	this.client.queueServiceActionCall("system", "ping", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: thumbAsset.
+ * The available service actions:
+ * @action	setAsDefault	Tags the thumbnail as DEFAULT_THUMB and removes that tag from all other thumbnail assets of the entry.
+ *	Create a new file sync link on the entry thumbnail that points to the thumbnail asset file sync.
+ *	.
+ * @action	generateByEntryId	.
+ * @action	generate	.
+ * @action	regenerate	.
+ * @action	get	.
+ * @action	getByEntryId	.
+ * @action	list	List Thumbnail Assets by filter and pager
+ *	.
+ * @action	addFromUrl	.
+ * @action	addFromImage	.
+ * @action	delete	.
+*/
+function KalturaThumbAssetService(client){
+	this.init(client);
+}
+KalturaThumbAssetService.inheritsFrom (KalturaServiceBase);
+/**
+ * Tags the thumbnail as DEFAULT_THUMB and removes that tag from all other thumbnail assets of the entry.
+ *	Create a new file sync link on the entry thumbnail that points to the thumbnail asset file sync.
+ *	.
+ * @param	thumbAssetId	string		 (optional).
+ * @return	.
+ */
+KalturaThumbAssetService.prototype.setAsDefault = function(callback, thumbAssetId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "thumbAssetId", thumbAssetId);
+	this.client.queueServiceActionCall("thumbAsset", "setAsDefault", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	entryId	string		 (optional).
+ * @param	destThumbParamsId	int		indicate the id of the ThumbParams to be generate this thumbnail by (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.generateByEntryId = function(callback, entryId, destThumbParamsId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.addParam(kparams, "destThumbParamsId", destThumbParamsId);
+	this.client.queueServiceActionCall("thumbAsset", "generateByEntryId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	entryId	string		 (optional).
+ * @param	thumbParams	KalturaThumbParams		 (optional).
+ * @param	sourceAssetId	string		id of the source asset (flavor or thumbnail) to be used as source for the thumbnail generation (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.generate = function(callback, entryId, thumbParams, sourceAssetId){
+	if(!sourceAssetId)
+		sourceAssetId = "";
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.addParam(kparams, "thumbParams", toParams(thumbParams));
+	this.client.addParam(kparams, "sourceAssetId", sourceAssetId);
+	this.client.queueServiceActionCall("thumbAsset", "generate", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	thumbAssetId	string		 (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.regenerate = function(callback, thumbAssetId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "thumbAssetId", thumbAssetId);
+	this.client.queueServiceActionCall("thumbAsset", "regenerate", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	thumbAssetId	string		 (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.get = function(callback, thumbAssetId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "thumbAssetId", thumbAssetId);
+	this.client.queueServiceActionCall("thumbAsset", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	entryId	string		 (optional).
+ * @return	array.
+ */
+KalturaThumbAssetService.prototype.getByEntryId = function(callback, entryId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.queueServiceActionCall("thumbAsset", "getByEntryId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List Thumbnail Assets by filter and pager
+ *	.
+ * @param	filter	KalturaAssetFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaThumbAssetListResponse.
+ */
+KalturaThumbAssetService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("thumbAsset", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	entryId	string		 (optional).
+ * @param	url	string		 (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.addFromUrl = function(callback, entryId, url){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.addParam(kparams, "url", url);
+	this.client.queueServiceActionCall("thumbAsset", "addFromUrl", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	entryId	string		 (optional).
+ * @param	fileData	file		 (optional).
+ * @return	KalturaThumbAsset.
+ */
+KalturaThumbAssetService.prototype.addFromImage = function(callback, entryId, fileData){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	kfiles = new Object();
+	this.client.addParam(kfiles, "fileData", fileData);
+	this.client.queueServiceActionCall("thumbAsset", "addFromImage", kparams, kfiles);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	thumbAssetId	string		 (optional).
+ * @return	.
+ */
+KalturaThumbAssetService.prototype.deleteAction = function(callback, thumbAssetId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "thumbAssetId", thumbAssetId);
+	this.client.queueServiceActionCall("thumbAsset", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: thumbParams.
+ * The available service actions:
+ * @action	add	Add new Thumb Params
+ *	.
+ * @action	get	Get Thumb Params by ID
+ *	.
+ * @action	update	Update Thumb Params by ID
+ *	.
+ * @action	delete	Delete Thumb Params by ID
+ *	.
+ * @action	list	List Thumb Params by filter with paging support (By default - all system default params will be listed too)
+ *	.
+ * @action	getByConversionProfileId	Get Thumb Params by Conversion Profile ID
+ *	.
+*/
+function KalturaThumbParamsService(client){
+	this.init(client);
+}
+KalturaThumbParamsService.inheritsFrom (KalturaServiceBase);
+/**
+ * Add new Thumb Params
+ *	.
+ * @param	thumbParams	KalturaThumbParams		 (optional).
+ * @return	KalturaThumbParams.
+ */
+KalturaThumbParamsService.prototype.add = function(callback, thumbParams){
+	var kparams = new Object();
+	this.client.addParam(kparams, "thumbParams", toParams(thumbParams));
+	this.client.queueServiceActionCall("thumbParams", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get Thumb Params by ID
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaThumbParams.
+ */
+KalturaThumbParamsService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("thumbParams", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update Thumb Params by ID
+ *	.
+ * @param	id	int		 (optional).
+ * @param	thumbParams	KalturaThumbParams		 (optional).
+ * @return	KalturaThumbParams.
+ */
+KalturaThumbParamsService.prototype.update = function(callback, id, thumbParams){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "thumbParams", toParams(thumbParams));
+	this.client.queueServiceActionCall("thumbParams", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete Thumb Params by ID
+ *	.
+ * @param	id	int		 (optional).
+ * @return	.
+ */
+KalturaThumbParamsService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("thumbParams", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List Thumb Params by filter with paging support (By default - all system default params will be listed too)
+ *	.
+ * @param	filter	KalturaThumbParamsFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaThumbParamsListResponse.
+ */
+KalturaThumbParamsService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("thumbParams", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get Thumb Params by Conversion Profile ID
+ *	.
+ * @param	conversionProfileId	int		 (optional).
+ * @return	array.
+ */
+KalturaThumbParamsService.prototype.getByConversionProfileId = function(callback, conversionProfileId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "conversionProfileId", conversionProfileId);
+	this.client.queueServiceActionCall("thumbParams", "getByConversionProfileId", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -3132,13 +3533,124 @@ KalturaUploadTokenService.prototype.listAction = function(callback, filter, page
 }
 
 /**
+ *Class definition for the Kaltura service: userRole.
+ * The available service actions:
+ * @action	add	Allows you to add a new KalturaUserRole object
+ *	.
+ * @action	get	Retrieve a KalturaUserRole object by ID
+ *	.
+ * @action	update	Update an existing KalturaUserRole object
+ *	.
+ * @action	delete	Mark the KalturaUserRole object as deleted
+ *	.
+ * @action	list	List permission items
+ *	.
+ * @action	clone	Clone role
+ *	.
+*/
+function KalturaUserRoleService(client){
+	this.init(client);
+}
+KalturaUserRoleService.inheritsFrom (KalturaServiceBase);
+/**
+ * Allows you to add a new KalturaUserRole object
+ *	.
+ * @param	userRole	KalturaUserRole		 (optional).
+ * @return	KalturaUserRole.
+ */
+KalturaUserRoleService.prototype.add = function(callback, userRole){
+	var kparams = new Object();
+	this.client.addParam(kparams, "userRole", toParams(userRole));
+	this.client.queueServiceActionCall("userRole", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve a KalturaUserRole object by ID
+ *	.
+ * @param	userRoleId	int		 (optional).
+ * @return	KalturaUserRole.
+ */
+KalturaUserRoleService.prototype.get = function(callback, userRoleId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "userRoleId", userRoleId);
+	this.client.queueServiceActionCall("userRole", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update an existing KalturaUserRole object
+ *	.
+ * @param	userRoleId	int		 (optional).
+ * @param	userRole	KalturaUserRole		Id (optional).
+ * @return	KalturaUserRole.
+ */
+KalturaUserRoleService.prototype.update = function(callback, userRoleId, userRole){
+	var kparams = new Object();
+	this.client.addParam(kparams, "userRoleId", userRoleId);
+	this.client.addParam(kparams, "userRole", toParams(userRole));
+	this.client.queueServiceActionCall("userRole", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Mark the KalturaUserRole object as deleted
+ *	.
+ * @param	userRoleId	int		 (optional).
+ * @return	KalturaUserRole.
+ */
+KalturaUserRoleService.prototype.deleteAction = function(callback, userRoleId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "userRoleId", userRoleId);
+	this.client.queueServiceActionCall("userRole", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List permission items
+ *	.
+ * @param	filter	KalturaUserRoleFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaUserRoleListResponse.
+ */
+KalturaUserRoleService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("userRole", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Clone role
+ *	.
+ * @param	userRoleId	int		 (optional).
+ * @return	KalturaUserRole.
+ */
+KalturaUserRoleService.prototype.cloneAction = function(callback, userRoleId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "userRoleId", userRoleId);
+	this.client.queueServiceActionCall("userRole", "clone", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
  *Class definition for the Kaltura service: user.
  * The available service actions:
  * @action	add	Adds a user to the Kaltura DB.
  *	Input param $id is the unique identifier in the partner's system.
- * @action	update	Update exisitng user, it is possible to update the user id too
+ * @action	update	Update existing user, it is possible to update the user id too
  *	.
- * @action	get	Retrieve user
+ * @action	get	Get user by user ID
+ *	.
+ * @action	getByLoginId	Get user by user's login ID and partner ID
  *	.
  * @action	delete	Mark the user as deleted
  *	.
@@ -3146,7 +3658,20 @@ KalturaUploadTokenService.prototype.listAction = function(callback, filter, page
  *	.
  * @action	notifyBan	Notify about user ban
  *	.
- * @action	login	Get a session using user email and password
+ * @action	login	Get a session using user id and password
+ *	.
+ * @action	loginByLoginId	Get a session using user's kaltura id and password
+ *	.
+ * @action	updateLoginData	Update user password and email
+ *	.
+ * @action	resetPassword	Reset admin user password and send it to the users email address
+ *	.
+ * @action	setInitialPassword	Set initial users password
+ *	.
+ * @action	enableLogin	Enable the user to login with a loginId (email) and password.
+ *	.
+ * @action	disableLogin	Disallow user to login with an id/password.
+ *	Passing either a loginId or a userId is allowed.
  *	.
 */
 function KalturaUserService(client){
@@ -3167,7 +3692,7 @@ KalturaUserService.prototype.add = function(callback, user){
 		this.client.doQueue(callback);
 }
 /**
- * Update exisitng user, it is possible to update the user id too
+ * Update existing user, it is possible to update the user id too
  *	.
  * @param	userId	string		 (optional).
  * @param	user	KalturaUser		Id (optional).
@@ -3182,7 +3707,7 @@ KalturaUserService.prototype.update = function(callback, userId, user){
 		this.client.doQueue(callback);
 }
 /**
- * Retrieve user
+ * Get user by user ID
  *	.
  * @param	userId	string		 (optional).
  * @return	KalturaUser.
@@ -3191,6 +3716,19 @@ KalturaUserService.prototype.get = function(callback, userId){
 	var kparams = new Object();
 	this.client.addParam(kparams, "userId", userId);
 	this.client.queueServiceActionCall("user", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get user by user's login ID and partner ID
+ *	.
+ * @param	loginId	string		 (optional).
+ * @return	KalturaUser.
+ */
+KalturaUserService.prototype.getByLoginId = function(callback, loginId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "loginId", loginId);
+	this.client.queueServiceActionCall("user", "getByLoginId", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -3242,7 +3780,7 @@ KalturaUserService.prototype.notifyBan = function(callback, userId){
 		this.client.doQueue(callback);
 }
 /**
- * Get a session using user email and password
+ * Get a session using user id and password
  *	.
  * @param	partnerId	int		 (optional).
  * @param	userId	string		 (optional).
@@ -3263,6 +3801,131 @@ KalturaUserService.prototype.login = function(callback, partnerId, userId, passw
 	this.client.addParam(kparams, "expiry", expiry);
 	this.client.addParam(kparams, "privileges", privileges);
 	this.client.queueServiceActionCall("user", "login", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get a session using user's kaltura id and password
+ *	.
+ * @param	loginId	string		login email (optional).
+ * @param	password	string		 (optional).
+ * @param	partnerId	int		 (optional).
+ * @param	expiry	int		 (optional, default: 86400).
+ * @param	privileges	string		 (optional, default: *).
+ * @return	string.
+ */
+KalturaUserService.prototype.loginByLoginId = function(callback, loginId, password, partnerId, expiry, privileges){
+	if(!partnerId)
+		partnerId = "";
+	if(!expiry)
+		expiry = 86400;
+	if(!privileges)
+		privileges = "*";
+	var kparams = new Object();
+	this.client.addParam(kparams, "loginId", loginId);
+	this.client.addParam(kparams, "password", password);
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.addParam(kparams, "expiry", expiry);
+	this.client.addParam(kparams, "privileges", privileges);
+	this.client.queueServiceActionCall("user", "loginByLoginId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update user password and email
+ *	.
+ * @param	oldLoginId	string		 (optional).
+ * @param	password	string		 (optional).
+ * @param	newLoginId	string		Optional, provide only when you want to update the login id (optional).
+ * @param	newPassword	string		 (optional).
+ * @param	newFirstName	string		 (optional).
+ * @param	newLastName	string		 (optional).
+ * @return	.
+ */
+KalturaUserService.prototype.updateLoginData = function(callback, oldLoginId, password, newLoginId, newPassword, newFirstName, newLastName){
+	if(!newLoginId)
+		newLoginId = "";
+	if(!newPassword)
+		newPassword = "";
+	if(!newFirstName)
+		newFirstName = "";
+	if(!newLastName)
+		newLastName = "";
+	var kparams = new Object();
+	this.client.addParam(kparams, "oldLoginId", oldLoginId);
+	this.client.addParam(kparams, "password", password);
+	this.client.addParam(kparams, "newLoginId", newLoginId);
+	this.client.addParam(kparams, "newPassword", newPassword);
+	this.client.addParam(kparams, "newFirstName", newFirstName);
+	this.client.addParam(kparams, "newLastName", newLastName);
+	this.client.queueServiceActionCall("user", "updateLoginData", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Reset admin user password and send it to the users email address
+ *	.
+ * @param	email	string		 (optional).
+ * @return	.
+ */
+KalturaUserService.prototype.resetPassword = function(callback, email){
+	var kparams = new Object();
+	this.client.addParam(kparams, "email", email);
+	this.client.queueServiceActionCall("user", "resetPassword", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Set initial users password
+ *	.
+ * @param	hashKey	string		 (optional).
+ * @param	newPassword	string		new password to set (optional).
+ * @return	.
+ */
+KalturaUserService.prototype.setInitialPassword = function(callback, hashKey, newPassword){
+	var kparams = new Object();
+	this.client.addParam(kparams, "hashKey", hashKey);
+	this.client.addParam(kparams, "newPassword", newPassword);
+	this.client.queueServiceActionCall("user", "setInitialPassword", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Enable the user to login with a loginId (email) and password.
+ *	.
+ * @param	userId	string		 (optional).
+ * @param	loginId	string		 (optional).
+ * @param	password	string		 (optional).
+ * @return	KalturaUser.
+ */
+KalturaUserService.prototype.enableLogin = function(callback, userId, loginId, password){
+	if(!password)
+		password = "";
+	var kparams = new Object();
+	this.client.addParam(kparams, "userId", userId);
+	this.client.addParam(kparams, "loginId", loginId);
+	this.client.addParam(kparams, "password", password);
+	this.client.queueServiceActionCall("user", "enableLogin", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Disallow user to login with an id/password.
+ *	Passing either a loginId or a userId is allowed.
+ *	.
+ * @param	userId	string		 (optional).
+ * @param	loginId	string		 (optional).
+ * @return	KalturaUser.
+ */
+KalturaUserService.prototype.disableLogin = function(callback, userId, loginId){
+	if(!userId)
+		userId = "";
+	if(!loginId)
+		loginId = "";
+	var kparams = new Object();
+	this.client.addParam(kparams, "userId", userId);
+	this.client.addParam(kparams, "loginId", loginId);
+	this.client.queueServiceActionCall("user", "disableLogin", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -3405,532 +4068,6 @@ KalturaXInternalService.prototype.xAddBulkDownload = function(callback, entryIds
 	this.client.addParam(kparams, "entryIds", entryIds);
 	this.client.addParam(kparams, "flavorParamsId", flavorParamsId);
 	this.client.queueServiceActionCall("xInternal", "xAddBulkDownload", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: fileSync.
- * The available service actions:
- * @action	list	List file syce objects by filter and pager
- *	.
- * @action	sync	.
-*/
-function KalturaFileSyncService(client){
-	this.init(client);
-}
-KalturaFileSyncService.inheritsFrom (KalturaServiceBase);
-/**
- * List file syce objects by filter and pager
- *	.
- * @param	filter	KalturaFileSyncFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaFileSyncListResponse.
- */
-KalturaFileSyncService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("fileSync", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	fileSyncId	int		 (optional).
- * @param	fileData	file		 (optional).
- * @return	KalturaFileSync.
- */
-KalturaFileSyncService.prototype.sync = function(callback, fileSyncId, fileData){
-	var kparams = new Object();
-	this.client.addParam(kparams, "fileSyncId", fileSyncId);
-	kfiles = new Object();
-	this.client.addParam(kfiles, "fileData", fileData);
-	this.client.queueServiceActionCall("fileSync", "sync", kparams, kfiles);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: systemUser.
- * The available service actions:
- * @action	verifyPassword	Verify password for email address
- *	.
- * @action	generateNewPassword	Generate new random password
- *	.
- * @action	setNewPassword	Set new password for user by email address
- *	.
- * @action	add	Add new system administrative user
- *	.
- * @action	get	Get system administrative user by id
- *	.
- * @action	getByEmail	Get system administrative user by email
- *	.
- * @action	update	Update system administrative user by id 
- *	.
- * @action	delete	Delete system administrative user by id
- *	.
- * @action	list	List system administrative users by filter and pager
- *	.
-*/
-function KalturaSystemUserService(client){
-	this.init(client);
-}
-KalturaSystemUserService.inheritsFrom (KalturaServiceBase);
-/**
- * Verify password for email address
- *	.
- * @param	email	string		 (optional).
- * @param	password	string		 (optional).
- * @return	KalturaSystemUser.
- */
-KalturaSystemUserService.prototype.verifyPassword = function(callback, email, password){
-	var kparams = new Object();
-	this.client.addParam(kparams, "email", email);
-	this.client.addParam(kparams, "password", password);
-	this.client.queueServiceActionCall("systemUser", "verifyPassword", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Generate new random password
- *	.
- * @return	string.
- */
-KalturaSystemUserService.prototype.generateNewPassword = function(callback){
-	var kparams = new Object();
-	this.client.queueServiceActionCall("systemUser", "generateNewPassword", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Set new password for user by email address
- *	.
- * @param	userId	int		 (optional).
- * @param	password	string		 (optional).
- * @return	.
- */
-KalturaSystemUserService.prototype.setNewPassword = function(callback, userId, password){
-	var kparams = new Object();
-	this.client.addParam(kparams, "userId", userId);
-	this.client.addParam(kparams, "password", password);
-	this.client.queueServiceActionCall("systemUser", "setNewPassword", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Add new system administrative user
- *	.
- * @param	systemUser	KalturaSystemUser		 (optional).
- * @return	KalturaSystemUser.
- */
-KalturaSystemUserService.prototype.add = function(callback, systemUser){
-	var kparams = new Object();
-	this.client.addParam(kparams, "systemUser", toParams(systemUser));
-	this.client.queueServiceActionCall("systemUser", "add", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Get system administrative user by id
- *	.
- * @param	userId	int		 (optional).
- * @return	KalturaSystemUser.
- */
-KalturaSystemUserService.prototype.get = function(callback, userId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "userId", userId);
-	this.client.queueServiceActionCall("systemUser", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Get system administrative user by email
- *	.
- * @param	email	string		 (optional).
- * @return	KalturaSystemUser.
- */
-KalturaSystemUserService.prototype.getByEmail = function(callback, email){
-	var kparams = new Object();
-	this.client.addParam(kparams, "email", email);
-	this.client.queueServiceActionCall("systemUser", "getByEmail", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update system administrative user by id 
- *	.
- * @param	userId	int		 (optional).
- * @param	systemUser	KalturaSystemUser		 (optional).
- * @return	KalturaSystemUser.
- */
-KalturaSystemUserService.prototype.update = function(callback, userId, systemUser){
-	var kparams = new Object();
-	this.client.addParam(kparams, "userId", userId);
-	this.client.addParam(kparams, "systemUser", toParams(systemUser));
-	this.client.queueServiceActionCall("systemUser", "update", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Delete system administrative user by id
- *	.
- * @param	userId	int		 (optional).
- * @return	.
- */
-KalturaSystemUserService.prototype.deleteAction = function(callback, userId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "userId", userId);
-	this.client.queueServiceActionCall("systemUser", "delete", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * List system administrative users by filter and pager
- *	.
- * @param	filter	KalturaSystemUserFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaSystemUserListResponse.
- */
-KalturaSystemUserService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("systemUser", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: systemPartner.
- * The available service actions:
- * @action	get	Retrieve all info about partner
- *	This service gets partner id as parameter and accessable to the admin console partner only
- *	.
- * @action	getUsage	.
- * @action	list	.
- * @action	updateStatus	.
- * @action	getAdminSession	.
- * @action	updateConfiguration	.
- * @action	getConfiguration	.
- * @action	getPackages	.
-*/
-function KalturaSystemPartnerService(client){
-	this.init(client);
-}
-KalturaSystemPartnerService.inheritsFrom (KalturaServiceBase);
-/**
- * Retrieve all info about partner
- *	This service gets partner id as parameter and accessable to the admin console partner only
- *	.
- * @param	partnerId	int		X (optional).
- * @return	KalturaPartner.
- */
-KalturaSystemPartnerService.prototype.get = function(callback, partnerId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "partnerId", partnerId);
-	this.client.queueServiceActionCall("systemPartner", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	partnerFilter	KalturaPartnerFilter		 (optional, default: null).
- * @param	usageFilter	KalturaSystemPartnerUsageFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaSystemPartnerUsageListResponse.
- */
-KalturaSystemPartnerService.prototype.getUsage = function(callback, partnerFilter, usageFilter, pager){
-	if(!partnerFilter)
-		partnerFilter = null;
-	if(!usageFilter)
-		usageFilter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (partnerFilter != null)
-		this.client.addParam(kparams, "partnerFilter", toParams(partnerFilter));
-	if (usageFilter != null)
-		this.client.addParam(kparams, "usageFilter", toParams(usageFilter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("systemPartner", "getUsage", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	filter	KalturaPartnerFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaPartnerListResponse.
- */
-KalturaSystemPartnerService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("systemPartner", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	partnerId	int		 (optional).
- * @param	status	int		 (optional, enum: KalturaPartnerStatus).
- * @return	.
- */
-KalturaSystemPartnerService.prototype.updateStatus = function(callback, partnerId, status){
-	var kparams = new Object();
-	this.client.addParam(kparams, "partnerId", partnerId);
-	this.client.addParam(kparams, "status", status);
-	this.client.queueServiceActionCall("systemPartner", "updateStatus", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	partnerId	int		 (optional).
- * @return	string.
- */
-KalturaSystemPartnerService.prototype.getAdminSession = function(callback, partnerId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "partnerId", partnerId);
-	this.client.queueServiceActionCall("systemPartner", "getAdminSession", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	partnerId	int		 (optional).
- * @param	configuration	KalturaSystemPartnerConfiguration		 (optional).
- * @return	.
- */
-KalturaSystemPartnerService.prototype.updateConfiguration = function(callback, partnerId, configuration){
-	var kparams = new Object();
-	this.client.addParam(kparams, "partnerId", partnerId);
-	this.client.addParam(kparams, "configuration", toParams(configuration));
-	this.client.queueServiceActionCall("systemPartner", "updateConfiguration", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	partnerId	int		 (optional).
- * @return	KalturaSystemPartnerConfiguration.
- */
-KalturaSystemPartnerService.prototype.getConfiguration = function(callback, partnerId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "partnerId", partnerId);
-	this.client.queueServiceActionCall("systemPartner", "getConfiguration", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @return	array.
- */
-KalturaSystemPartnerService.prototype.getPackages = function(callback){
-	var kparams = new Object();
-	this.client.queueServiceActionCall("systemPartner", "getPackages", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: flavorParamsOutput.
- * The available service actions:
- * @action	list	List flavor params output objects by filter and pager
- *	.
-*/
-function KalturaFlavorParamsOutputService(client){
-	this.init(client);
-}
-KalturaFlavorParamsOutputService.inheritsFrom (KalturaServiceBase);
-/**
- * List flavor params output objects by filter and pager
- *	.
- * @param	filter	KalturaFlavorParamsOutputFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaFlavorParamsOutputListResponse.
- */
-KalturaFlavorParamsOutputService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("flavorParamsOutput", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: mediaInfo.
- * The available service actions:
- * @action	list	List media info objects by filter and pager
- *	.
-*/
-function KalturaMediaInfoService(client){
-	this.init(client);
-}
-KalturaMediaInfoService.inheritsFrom (KalturaServiceBase);
-/**
- * List media info objects by filter and pager
- *	.
- * @param	filter	KalturaMediaInfoFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaMediaInfoListResponse.
- */
-KalturaMediaInfoService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("mediaInfo", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: entryAdmin.
- * The available service actions:
- * @action	get	Get base entry by ID with no filters.
- *	.
-*/
-function KalturaEntryAdminService(client){
-	this.init(client);
-}
-KalturaEntryAdminService.inheritsFrom (KalturaServiceBase);
-/**
- * Get base entry by ID with no filters.
- *	.
- * @param	entryId	string		Entry id (optional).
- * @param	version	int		Desired version of the data (optional, default: -1).
- * @return	KalturaBaseEntry.
- */
-KalturaEntryAdminService.prototype.get = function(callback, entryId, version){
-	if(!version)
-		version = -1;
-	var kparams = new Object();
-	this.client.addParam(kparams, "entryId", entryId);
-	this.client.addParam(kparams, "version", version);
-	this.client.queueServiceActionCall("entryAdmin", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: storageProfile.
- * The available service actions:
- * @action	listByPartner	.
- * @action	updateStatus	.
- * @action	get	Get storage profile by id
- *	.
- * @action	update	Update storage profile by id 
- *	.
- * @action	add	Adds a storage profile to the Kaltura DB..
-*/
-function KalturaStorageProfileService(client){
-	this.init(client);
-}
-KalturaStorageProfileService.inheritsFrom (KalturaServiceBase);
-/**
- * .
- * @param	filter	KalturaPartnerFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaStorageProfileListResponse.
- */
-KalturaStorageProfileService.prototype.listByPartner = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("storageProfile", "listByPartner", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * .
- * @param	storageId	int		 (optional).
- * @param	status	int		 (optional, enum: KalturaStorageProfileStatus).
- * @return	.
- */
-KalturaStorageProfileService.prototype.updateStatus = function(callback, storageId, status){
-	var kparams = new Object();
-	this.client.addParam(kparams, "storageId", storageId);
-	this.client.addParam(kparams, "status", status);
-	this.client.queueServiceActionCall("storageProfile", "updateStatus", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Get storage profile by id
- *	.
- * @param	storageProfileId	int		 (optional).
- * @return	KalturaStorageProfile.
- */
-KalturaStorageProfileService.prototype.get = function(callback, storageProfileId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "storageProfileId", storageProfileId);
-	this.client.queueServiceActionCall("storageProfile", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update storage profile by id 
- *	.
- * @param	storageProfileId	int		 (optional).
- * @param	storageProfile	KalturaStorageProfile		Id (optional).
- * @return	KalturaStorageProfile.
- */
-KalturaStorageProfileService.prototype.update = function(callback, storageProfileId, storageProfile){
-	var kparams = new Object();
-	this.client.addParam(kparams, "storageProfileId", storageProfileId);
-	this.client.addParam(kparams, "storageProfile", toParams(storageProfile));
-	this.client.queueServiceActionCall("storageProfile", "update", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Adds a storage profile to the Kaltura DB..
- * @param	storageProfile	KalturaStorageProfile		 (optional).
- * @return	KalturaStorageProfile.
- */
-KalturaStorageProfileService.prototype.add = function(callback, storageProfile){
-	var kparams = new Object();
-	this.client.addParam(kparams, "storageProfile", toParams(storageProfile));
-	this.client.queueServiceActionCall("storageProfile", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -4157,6 +4294,8 @@ KalturaMetadataService.prototype.updateFromFile = function(callback, id, xmlFile
  *	.
  * @action	update	Update an existing metadata object
  *	.
+ * @action	revert	Update an existing metadata object definition file
+ *	.
  * @action	updateDefinitionFromFile	Update an existing metadata object definition file
  *	.
  * @action	updateViewsFromFile	Update an existing metadata object views file
@@ -4292,6 +4431,21 @@ KalturaMetadataProfileService.prototype.update = function(callback, id, metadata
  * Update an existing metadata object definition file
  *	.
  * @param	id	int		 (optional).
+ * @param	toVersion	int		 (optional).
+ * @return	KalturaMetadataProfile.
+ */
+KalturaMetadataProfileService.prototype.revert = function(callback, id, toVersion){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "toVersion", toVersion);
+	this.client.queueServiceActionCall("metadataProfile", "revert", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update an existing metadata object definition file
+ *	.
+ * @param	id	int		 (optional).
  * @param	xsdFile	file		XSD metadata definition (optional).
  * @return	KalturaMetadataProfile.
  */
@@ -4317,3272 +4471,6 @@ KalturaMetadataProfileService.prototype.updateViewsFromFile = function(callback,
 	kfiles = new Object();
 	this.client.addParam(kfiles, "viewsFile", viewsFile);
 	this.client.queueServiceActionCall("metadataProfile", "updateViewsFromFile", kparams, kfiles);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: metadataBatch.
- * The available service actions:
- * @action	getExclusiveImportMetadataJobs	batch getExclusiveImportMetadataJob action allows to get a BatchJob of type METADATA_IMPORT 
- *	.
- * @action	updateExclusiveImportMetadataJob	batch updateExclusiveImportMetadataJob action updates a BatchJob of type METADATA_IMPORT that was claimed using the getExclusiveImportMetadataJobs
- *	.
- * @action	freeExclusiveImportMetadataJob	batch freeExclusiveImportMetadataJob action frees a BatchJob of type ImportMetadata that was claimed using the getExclusiveImportMetadataJobs
- *	.
- * @action	getExclusiveTransformMetadataJobs	batch getExclusiveTransformMetadataJob action allows to get a BatchJob of type METADATA_TRANSFORM 
- *	.
- * @action	updateExclusiveTransformMetadataJob	batch updateExclusiveTransformMetadataJob action updates a BatchJob of type METADATA_TRANSFORM that was claimed using the getExclusiveTransformMetadataJobs
- *	.
- * @action	freeExclusiveTransformMetadataJob	batch freeExclusiveTransformMetadataJob action frees a BatchJob of type TransformMetadata that was claimed using the getExclusiveTransformMetadataJobs
- *	.
- * @action	getTransformMetadataObjects	batch getTransformMetadataObjects action retrieve all metadata objects that requires upgrade and the total count 
- *	.
- * @action	upgradeMetadataObjects	batch getTransformMetadataObjects action retrieve all metadata objects that requires upgrade and the total count 
- *	.
- * @action	getExclusiveImportJobs	batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
- *	.
- * @action	updateExclusiveImportJob	batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @action	freeExclusiveImportJob	batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @action	getExclusiveBulkUploadJobs	batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @action	getExclusiveAlmostDoneBulkUploadJobs	batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkUploadJob	batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	freeExclusiveBulkUploadJob	batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	addBulkUploadResult	batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getBulkUploadLastResult	batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @action	updateBulkUploadResults	batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getExclusiveAlmostDoneRemoteConvertJobs	batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveRemoteConvertJob	batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveRemoteConvertJob	batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveAlmostDoneConvertCollectionJobs	batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @action	getExclusiveAlmostDoneConvertProfileJobs	batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertCollectionJob	batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertProfileJob	batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertCollectionJob	batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertProfileJob	batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveConvertCollectionJobs	batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @action	getExclusiveConvertJobs	batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @action	getExclusiveAlmostDoneConvertJobs	batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertJob	batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertJobSubType	batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertJob	batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusivePostConvertJobs	batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @action	updateExclusivePostConvertJob	batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	freeExclusivePostConvertJob	batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	getExclusivePullJobs	batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @action	updateExclusivePullJob	batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @action	freeExclusivePullJob	batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @action	getExclusiveExtractMediaJobs	batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @action	updateExclusiveExtractMediaJob	batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	addMediaInfo	batch addMediaInfoAction action saves a media info object
- *	.
- * @action	freeExclusiveExtractMediaJob	batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	getExclusiveStorageExportJobs	batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @action	updateExclusiveStorageExportJob	batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	freeExclusiveStorageExportJob	batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	getExclusiveStorageDeleteJobs	batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @action	updateExclusiveStorageDeleteJob	batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	freeExclusiveStorageDeleteJob	batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	getExclusiveNotificationJobs	batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @action	updateExclusiveNotificationJob	batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	freeExclusiveNotificationJob	batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	getExclusiveMailJobs	batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @action	updateExclusiveMailJob	batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	freeExclusiveMailJob	batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	getExclusiveBulkDownloadJobs	batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @action	getExclusiveAlmostDoneBulkDownloadJobs	batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkDownloadJob	batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	freeExclusiveBulkDownloadJob	batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	getExclusiveProvisionProvideJobs	batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @action	getExclusiveAlmostDoneProvisionProvideJobs	batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionProvideJob	batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	freeExclusiveProvisionProvideJob	batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	getExclusiveProvisionDeleteJobs	batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @action	getExclusiveAlmostDoneProvisionDeleteJobs	batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionDeleteJob	batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	freeExclusiveProvisionDeleteJob	batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	resetJobExecutionAttempts	batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @action	freeExclusiveJob	batch freeExclusiveJobAction action allows to get a generic BatchJob 
- *	.
- * @action	getQueueSize	batch getQueueSize action get the queue size for job type 
- *	.
- * @action	getExclusiveJobs	batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @action	getExclusiveAlmostDone	batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @action	updateExclusiveJob	batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
- *	.
- * @action	cleanExclusiveJobs	batch cleanExclusiveJobs action mark as fatal error all expired jobs
- *	.
- * @action	logConversion	Add the data to the flavor asset conversion log, creates it if doesn't exists
- *	.
- * @action	checkFileExists	batch checkFileExists action check if the file exists
- *	.
-*/
-function KalturaMetadataBatchService(client){
-	this.init(client);
-}
-KalturaMetadataBatchService.inheritsFrom (KalturaServiceBase);
-/**
- * batch getExclusiveImportMetadataJob action allows to get a BatchJob of type METADATA_IMPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveImportMetadataJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveImportMetadataJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveImportMetadataJob action updates a BatchJob of type METADATA_IMPORT that was claimed using the getExclusiveImportMetadataJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveImportMetadataJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveImportMetadataJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveImportMetadataJob action frees a BatchJob of type ImportMetadata that was claimed using the getExclusiveImportMetadataJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveImportMetadataJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveImportMetadataJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveTransformMetadataJob action allows to get a BatchJob of type METADATA_TRANSFORM 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveTransformMetadataJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveTransformMetadataJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveTransformMetadataJob action updates a BatchJob of type METADATA_TRANSFORM that was claimed using the getExclusiveTransformMetadataJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveTransformMetadataJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveTransformMetadataJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveTransformMetadataJob action frees a BatchJob of type TransformMetadata that was claimed using the getExclusiveTransformMetadataJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveTransformMetadataJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveTransformMetadataJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getTransformMetadataObjects action retrieve all metadata objects that requires upgrade and the total count 
- *	.
- * @param	metadataProfileId	int		The id of the metadata profile (optional).
- * @param	srcVersion	int		The old metadata profile version (optional).
- * @param	destVersion	int		The new metadata profile version (optional).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaTransformMetadataResponse.
- */
-KalturaMetadataBatchService.prototype.getTransformMetadataObjects = function(callback, metadataProfileId, srcVersion, destVersion, pager){
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "metadataProfileId", metadataProfileId);
-	this.client.addParam(kparams, "srcVersion", srcVersion);
-	this.client.addParam(kparams, "destVersion", destVersion);
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("metadataBatch", "getTransformMetadataObjects", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getTransformMetadataObjects action retrieve all metadata objects that requires upgrade and the total count 
- *	.
- * @param	metadataProfileId	int		The id of the metadata profile (optional).
- * @param	srcVersion	int		The old metadata profile version (optional).
- * @param	destVersion	int		The new metadata profile version (optional).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaUpgradeMetadataResponse.
- */
-KalturaMetadataBatchService.prototype.upgradeMetadataObjects = function(callback, metadataProfileId, srcVersion, destVersion, pager){
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "metadataProfileId", metadataProfileId);
-	this.client.addParam(kparams, "srcVersion", srcVersion);
-	this.client.addParam(kparams, "destVersion", destVersion);
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("metadataBatch", "upgradeMetadataObjects", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveImportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveImportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveImportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveImportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveBulkUploadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveBulkUploadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadResult	KalturaBulkUploadResult		The results to save to the DB (optional).
- * @param	pluginDataArray	array		 (optional, default: null).
- * @return	KalturaBulkUploadResult.
- */
-KalturaMetadataBatchService.prototype.addBulkUploadResult = function(callback, bulkUploadResult, pluginDataArray){
-	if(!pluginDataArray)
-		pluginDataArray = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadResult", toParams(bulkUploadResult));
-	if(pluginDataArray != null)
-	for(var index in pluginDataArray)
-	{
-		var obj = pluginDataArray[index];
-		this.client.addParam(kparams, "pluginDataArray:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("metadataBatch", "addBulkUploadResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	KalturaBulkUploadResult.
- */
-KalturaMetadataBatchService.prototype.getBulkUploadLastResult = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("metadataBatch", "getBulkUploadLastResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	int.
- */
-KalturaMetadataBatchService.prototype.updateBulkUploadResults = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("metadataBatch", "updateBulkUploadResults", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneRemoteConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneRemoteConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveRemoteConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveRemoteConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneConvertProfileJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneConvertProfileJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change (optional, enum: KalturaEntryStatus, default: null).
- * @param	flavorsData	array		 (optional, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveConvertCollectionJob = function(callback, id, lockKey, job, entryStatus, flavorsData){
-	if(!entryStatus)
-		entryStatus = null;
-	if(!flavorsData)
-		flavorsData = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	if(flavorsData != null)
-	for(var index in flavorsData)
-	{
-		var obj = flavorsData[index];
-		this.client.addParam(kparams, "flavorsData:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveConvertProfileJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveConvertCollectionJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveConvertProfileJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	subType	int		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveConvertJobSubType = function(callback, id, lockKey, subType){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "subType", subType);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveConvertJobSubType", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusivePostConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusivePostConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusivePostConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusivePostConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusivePullJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusivePullJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusivePullJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusivePullJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveExtractMediaJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveExtractMediaJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveExtractMediaJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addMediaInfoAction action saves a media info object
- *	.
- * @param	mediaInfo	KalturaMediaInfo		 (optional).
- * @return	KalturaMediaInfo.
- */
-KalturaMetadataBatchService.prototype.addMediaInfo = function(callback, mediaInfo){
-	var kparams = new Object();
-	this.client.addParam(kparams, "mediaInfo", toParams(mediaInfo));
-	this.client.queueServiceActionCall("metadataBatch", "addMediaInfo", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveExtractMediaJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveStorageExportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveStorageExportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveStorageExportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveStorageExportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveStorageDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveStorageDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveStorageDeleteJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveStorageDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	KalturaBatchGetExclusiveNotificationJobsResponse.
- */
-KalturaMetadataBatchService.prototype.getExclusiveNotificationJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveNotificationJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveNotificationJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveNotificationJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveMailJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveMailJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveMailJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveMailJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveBulkDownloadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveBulkDownloadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveProvisionProvideJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveProvisionProvideJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDoneProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDoneProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveProvisionDeleteJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveProvisionDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
- * @return	.
- */
-KalturaMetadataBatchService.prototype.resetJobExecutionAttempts = function(callback, id, lockKey, jobType){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("metadataBatch", "resetJobExecutionAttempts", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveJobAction action allows to get a generic BatchJob 
- *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaMetadataBatchService.prototype.freeExclusiveJob = function(callback, id, lockKey, jobType, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("metadataBatch", "freeExclusiveJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getQueueSize action get the queue size for job type 
- *	.
- * @param	workerQueueFilter	KalturaWorkerQueueFilter		The worker filter   (optional).
- * @return	int.
- */
-KalturaMetadataBatchService.prototype.getQueueSize = function(callback, workerQueueFilter){
-	var kparams = new Object();
-	this.client.addParam(kparams, "workerQueueFilter", toParams(workerQueueFilter));
-	this.client.queueServiceActionCall("metadataBatch", "getQueueSize", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
-	if(!filter)
-		filter = null;
-	if(!jobType)
-		jobType = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
- */
-KalturaMetadataBatchService.prototype.getExclusiveAlmostDone = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
-	if(!filter)
-		filter = null;
-	if(!jobType)
-		jobType = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("metadataBatch", "getExclusiveAlmostDone", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaMetadataBatchService.prototype.updateExclusiveJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("metadataBatch", "updateExclusiveJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch cleanExclusiveJobs action mark as fatal error all expired jobs
- *	.
- * @return	int.
- */
-KalturaMetadataBatchService.prototype.cleanExclusiveJobs = function(callback){
-	var kparams = new Object();
-	this.client.queueServiceActionCall("metadataBatch", "cleanExclusiveJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Add the data to the flavor asset conversion log, creates it if doesn't exists
- *	.
- * @param	flavorAssetId	string		 (optional).
- * @param	data	string		 (optional).
- * @return	.
- */
-KalturaMetadataBatchService.prototype.logConversion = function(callback, flavorAssetId, data){
-	var kparams = new Object();
-	this.client.addParam(kparams, "flavorAssetId", flavorAssetId);
-	this.client.addParam(kparams, "data", data);
-	this.client.queueServiceActionCall("metadataBatch", "logConversion", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch checkFileExists action check if the file exists
- *	.
- * @param	localPath	string		 (optional).
- * @param	size	int		 (optional).
- * @return	KalturaFileExistsResponse.
- */
-KalturaMetadataBatchService.prototype.checkFileExists = function(callback, localPath, size){
-	var kparams = new Object();
-	this.client.addParam(kparams, "localPath", localPath);
-	this.client.addParam(kparams, "size", size);
-	this.client.queueServiceActionCall("metadataBatch", "checkFileExists", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: filesyncImportBatch.
- * The available service actions:
- * @action	getExclusiveFileSyncImportJobs	batch getExclusiveFileSyncImportJob action allows to get a BatchJob of type FILESYNC_IMPORT 
- *	.
- * @action	updateExclusiveFileSyncImportJob	batch updateExclusiveFileSyncImportJob action updates a BatchJob of type FILESYNC_IMPORT that was claimed using the getExclusiveFileSyncImportJobs
- *	.
- * @action	freeExclusiveFileSyncImportJob	batch freeExclusiveFileSyncImportJob action frees a BatchJob of type FILESYNC_IMPORT that was claimed using the getExclusiveFileSyncImportJobs
- *	.
- * @action	getExclusiveAlmostDoneFileSyncImportJobs	batch getExclusiveAlmostDoneFileSyncImportJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @action	getExclusiveImportJobs	batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
- *	.
- * @action	updateExclusiveImportJob	batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @action	freeExclusiveImportJob	batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @action	getExclusiveBulkUploadJobs	batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @action	getExclusiveAlmostDoneBulkUploadJobs	batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkUploadJob	batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	freeExclusiveBulkUploadJob	batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	addBulkUploadResult	batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getBulkUploadLastResult	batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @action	updateBulkUploadResults	batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getExclusiveAlmostDoneRemoteConvertJobs	batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveRemoteConvertJob	batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveRemoteConvertJob	batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveAlmostDoneConvertCollectionJobs	batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @action	getExclusiveAlmostDoneConvertProfileJobs	batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertCollectionJob	batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertProfileJob	batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertCollectionJob	batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertProfileJob	batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveConvertCollectionJobs	batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @action	getExclusiveConvertJobs	batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @action	getExclusiveAlmostDoneConvertJobs	batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertJob	batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertJobSubType	batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertJob	batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusivePostConvertJobs	batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @action	updateExclusivePostConvertJob	batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	freeExclusivePostConvertJob	batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	getExclusivePullJobs	batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @action	updateExclusivePullJob	batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @action	freeExclusivePullJob	batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @action	getExclusiveExtractMediaJobs	batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @action	updateExclusiveExtractMediaJob	batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	addMediaInfo	batch addMediaInfoAction action saves a media info object
- *	.
- * @action	freeExclusiveExtractMediaJob	batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	getExclusiveStorageExportJobs	batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @action	updateExclusiveStorageExportJob	batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	freeExclusiveStorageExportJob	batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	getExclusiveStorageDeleteJobs	batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @action	updateExclusiveStorageDeleteJob	batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	freeExclusiveStorageDeleteJob	batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	getExclusiveNotificationJobs	batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @action	updateExclusiveNotificationJob	batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	freeExclusiveNotificationJob	batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	getExclusiveMailJobs	batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @action	updateExclusiveMailJob	batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	freeExclusiveMailJob	batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	getExclusiveBulkDownloadJobs	batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @action	getExclusiveAlmostDoneBulkDownloadJobs	batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkDownloadJob	batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	freeExclusiveBulkDownloadJob	batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	getExclusiveProvisionProvideJobs	batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @action	getExclusiveAlmostDoneProvisionProvideJobs	batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionProvideJob	batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	freeExclusiveProvisionProvideJob	batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	getExclusiveProvisionDeleteJobs	batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @action	getExclusiveAlmostDoneProvisionDeleteJobs	batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionDeleteJob	batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	freeExclusiveProvisionDeleteJob	batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	resetJobExecutionAttempts	batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @action	freeExclusiveJob	batch freeExclusiveJobAction action allows to get a generic BatchJob 
- *	.
- * @action	getQueueSize	batch getQueueSize action get the queue size for job type 
- *	.
- * @action	getExclusiveJobs	batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @action	getExclusiveAlmostDone	batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @action	updateExclusiveJob	batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
- *	.
- * @action	cleanExclusiveJobs	batch cleanExclusiveJobs action mark as fatal error all expired jobs
- *	.
- * @action	logConversion	Add the data to the flavor asset conversion log, creates it if doesn't exists
- *	.
- * @action	checkFileExists	batch checkFileExists action check if the file exists
- *	.
-*/
-function KalturaFilesyncImportBatchService(client){
-	this.init(client);
-}
-KalturaFilesyncImportBatchService.inheritsFrom (KalturaServiceBase);
-/**
- * batch getExclusiveFileSyncImportJob action allows to get a BatchJob of type FILESYNC_IMPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveFileSyncImportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveFileSyncImportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveFileSyncImportJob action updates a BatchJob of type FILESYNC_IMPORT that was claimed using the getExclusiveFileSyncImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveFileSyncImportJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveFileSyncImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveFileSyncImportJob action frees a BatchJob of type FILESYNC_IMPORT that was claimed using the getExclusiveFileSyncImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveFileSyncImportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveFileSyncImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneFileSyncImportJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneFileSyncImportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneFileSyncImportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveImportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveImportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveImportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveImportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveBulkUploadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveBulkUploadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadResult	KalturaBulkUploadResult		The results to save to the DB (optional).
- * @param	pluginDataArray	array		 (optional, default: null).
- * @return	KalturaBulkUploadResult.
- */
-KalturaFilesyncImportBatchService.prototype.addBulkUploadResult = function(callback, bulkUploadResult, pluginDataArray){
-	if(!pluginDataArray)
-		pluginDataArray = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadResult", toParams(bulkUploadResult));
-	if(pluginDataArray != null)
-	for(var index in pluginDataArray)
-	{
-		var obj = pluginDataArray[index];
-		this.client.addParam(kparams, "pluginDataArray:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("filesyncImportBatch", "addBulkUploadResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	KalturaBulkUploadResult.
- */
-KalturaFilesyncImportBatchService.prototype.getBulkUploadLastResult = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("filesyncImportBatch", "getBulkUploadLastResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	int.
- */
-KalturaFilesyncImportBatchService.prototype.updateBulkUploadResults = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateBulkUploadResults", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneRemoteConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneRemoteConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveRemoteConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveRemoteConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneConvertProfileJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneConvertProfileJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change (optional, enum: KalturaEntryStatus, default: null).
- * @param	flavorsData	array		 (optional, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveConvertCollectionJob = function(callback, id, lockKey, job, entryStatus, flavorsData){
-	if(!entryStatus)
-		entryStatus = null;
-	if(!flavorsData)
-		flavorsData = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	if(flavorsData != null)
-	for(var index in flavorsData)
-	{
-		var obj = flavorsData[index];
-		this.client.addParam(kparams, "flavorsData:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveConvertProfileJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveConvertCollectionJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveConvertProfileJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	subType	int		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveConvertJobSubType = function(callback, id, lockKey, subType){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "subType", subType);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveConvertJobSubType", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusivePostConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusivePostConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusivePostConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusivePostConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusivePullJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusivePullJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusivePullJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusivePullJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveExtractMediaJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveExtractMediaJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveExtractMediaJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addMediaInfoAction action saves a media info object
- *	.
- * @param	mediaInfo	KalturaMediaInfo		 (optional).
- * @return	KalturaMediaInfo.
- */
-KalturaFilesyncImportBatchService.prototype.addMediaInfo = function(callback, mediaInfo){
-	var kparams = new Object();
-	this.client.addParam(kparams, "mediaInfo", toParams(mediaInfo));
-	this.client.queueServiceActionCall("filesyncImportBatch", "addMediaInfo", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveExtractMediaJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveStorageExportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveStorageExportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveStorageExportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveStorageExportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveStorageDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveStorageDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveStorageDeleteJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveStorageDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	KalturaBatchGetExclusiveNotificationJobsResponse.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveNotificationJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveNotificationJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveNotificationJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveNotificationJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveMailJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveMailJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveMailJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveMailJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveBulkDownloadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveBulkDownloadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveProvisionProvideJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveProvisionProvideJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDoneProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDoneProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveProvisionDeleteJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveProvisionDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
- * @return	.
- */
-KalturaFilesyncImportBatchService.prototype.resetJobExecutionAttempts = function(callback, id, lockKey, jobType){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("filesyncImportBatch", "resetJobExecutionAttempts", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveJobAction action allows to get a generic BatchJob 
- *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaFilesyncImportBatchService.prototype.freeExclusiveJob = function(callback, id, lockKey, jobType, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("filesyncImportBatch", "freeExclusiveJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getQueueSize action get the queue size for job type 
- *	.
- * @param	workerQueueFilter	KalturaWorkerQueueFilter		The worker filter   (optional).
- * @return	int.
- */
-KalturaFilesyncImportBatchService.prototype.getQueueSize = function(callback, workerQueueFilter){
-	var kparams = new Object();
-	this.client.addParam(kparams, "workerQueueFilter", toParams(workerQueueFilter));
-	this.client.queueServiceActionCall("filesyncImportBatch", "getQueueSize", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
-	if(!filter)
-		filter = null;
-	if(!jobType)
-		jobType = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
- */
-KalturaFilesyncImportBatchService.prototype.getExclusiveAlmostDone = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
-	if(!filter)
-		filter = null;
-	if(!jobType)
-		jobType = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("filesyncImportBatch", "getExclusiveAlmostDone", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaFilesyncImportBatchService.prototype.updateExclusiveJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("filesyncImportBatch", "updateExclusiveJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch cleanExclusiveJobs action mark as fatal error all expired jobs
- *	.
- * @return	int.
- */
-KalturaFilesyncImportBatchService.prototype.cleanExclusiveJobs = function(callback){
-	var kparams = new Object();
-	this.client.queueServiceActionCall("filesyncImportBatch", "cleanExclusiveJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Add the data to the flavor asset conversion log, creates it if doesn't exists
- *	.
- * @param	flavorAssetId	string		 (optional).
- * @param	data	string		 (optional).
- * @return	.
- */
-KalturaFilesyncImportBatchService.prototype.logConversion = function(callback, flavorAssetId, data){
-	var kparams = new Object();
-	this.client.addParam(kparams, "flavorAssetId", flavorAssetId);
-	this.client.addParam(kparams, "data", data);
-	this.client.queueServiceActionCall("filesyncImportBatch", "logConversion", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch checkFileExists action check if the file exists
- *	.
- * @param	localPath	string		 (optional).
- * @param	size	int		 (optional).
- * @return	KalturaFileExistsResponse.
- */
-KalturaFilesyncImportBatchService.prototype.checkFileExists = function(callback, localPath, size){
-	var kparams = new Object();
-	this.client.addParam(kparams, "localPath", localPath);
-	this.client.addParam(kparams, "size", size);
-	this.client.queueServiceActionCall("filesyncImportBatch", "checkFileExists", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -7793,6 +4681,438 @@ KalturaDocumentsService.prototype.convertPptToSwf = function(callback, entryId){
 }
 
 /**
+ *Class definition for the Kaltura service: storageProfile.
+ * The available service actions:
+ * @action	listByPartner	.
+ * @action	updateStatus	.
+ * @action	get	Get storage profile by id
+ *	.
+ * @action	update	Update storage profile by id 
+ *	.
+ * @action	add	Adds a storage profile to the Kaltura DB..
+*/
+function KalturaStorageProfileService(client){
+	this.init(client);
+}
+KalturaStorageProfileService.inheritsFrom (KalturaServiceBase);
+/**
+ * .
+ * @param	filter	KalturaPartnerFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaStorageProfileListResponse.
+ */
+KalturaStorageProfileService.prototype.listByPartner = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("storageProfile", "listByPartner", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	storageId	int		 (optional).
+ * @param	status	int		 (optional, enum: KalturaStorageProfileStatus).
+ * @return	.
+ */
+KalturaStorageProfileService.prototype.updateStatus = function(callback, storageId, status){
+	var kparams = new Object();
+	this.client.addParam(kparams, "storageId", storageId);
+	this.client.addParam(kparams, "status", status);
+	this.client.queueServiceActionCall("storageProfile", "updateStatus", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get storage profile by id
+ *	.
+ * @param	storageProfileId	int		 (optional).
+ * @return	KalturaStorageProfile.
+ */
+KalturaStorageProfileService.prototype.get = function(callback, storageProfileId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "storageProfileId", storageProfileId);
+	this.client.queueServiceActionCall("storageProfile", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update storage profile by id 
+ *	.
+ * @param	storageProfileId	int		 (optional).
+ * @param	storageProfile	KalturaStorageProfile		Id (optional).
+ * @return	KalturaStorageProfile.
+ */
+KalturaStorageProfileService.prototype.update = function(callback, storageProfileId, storageProfile){
+	var kparams = new Object();
+	this.client.addParam(kparams, "storageProfileId", storageProfileId);
+	this.client.addParam(kparams, "storageProfile", toParams(storageProfile));
+	this.client.queueServiceActionCall("storageProfile", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Adds a storage profile to the Kaltura DB..
+ * @param	storageProfile	KalturaStorageProfile		 (optional).
+ * @return	KalturaStorageProfile.
+ */
+KalturaStorageProfileService.prototype.add = function(callback, storageProfile){
+	var kparams = new Object();
+	this.client.addParam(kparams, "storageProfile", toParams(storageProfile));
+	this.client.queueServiceActionCall("storageProfile", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: systemPartner.
+ * The available service actions:
+ * @action	get	Retrieve all info about partner
+ *	This service gets partner id as parameter and accessable to the admin console partner only
+ *	.
+ * @action	getUsage	.
+ * @action	list	.
+ * @action	updateStatus	.
+ * @action	getAdminSession	.
+ * @action	updateConfiguration	.
+ * @action	getConfiguration	.
+ * @action	getPackages	.
+*/
+function KalturaSystemPartnerService(client){
+	this.init(client);
+}
+KalturaSystemPartnerService.inheritsFrom (KalturaServiceBase);
+/**
+ * Retrieve all info about partner
+ *	This service gets partner id as parameter and accessable to the admin console partner only
+ *	.
+ * @param	partnerId	int		X (optional).
+ * @return	KalturaPartner.
+ */
+KalturaSystemPartnerService.prototype.get = function(callback, partnerId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.queueServiceActionCall("systemPartner", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	partnerFilter	KalturaPartnerFilter		 (optional, default: null).
+ * @param	usageFilter	KalturaSystemPartnerUsageFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaSystemPartnerUsageListResponse.
+ */
+KalturaSystemPartnerService.prototype.getUsage = function(callback, partnerFilter, usageFilter, pager){
+	if(!partnerFilter)
+		partnerFilter = null;
+	if(!usageFilter)
+		usageFilter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (partnerFilter != null)
+		this.client.addParam(kparams, "partnerFilter", toParams(partnerFilter));
+	if (usageFilter != null)
+		this.client.addParam(kparams, "usageFilter", toParams(usageFilter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("systemPartner", "getUsage", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	filter	KalturaPartnerFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaPartnerListResponse.
+ */
+KalturaSystemPartnerService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("systemPartner", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	partnerId	int		 (optional).
+ * @param	status	int		 (optional, enum: KalturaPartnerStatus).
+ * @return	.
+ */
+KalturaSystemPartnerService.prototype.updateStatus = function(callback, partnerId, status){
+	var kparams = new Object();
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.addParam(kparams, "status", status);
+	this.client.queueServiceActionCall("systemPartner", "updateStatus", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	partnerId	int		 (optional).
+ * @param	userId	string		 (optional).
+ * @return	string.
+ */
+KalturaSystemPartnerService.prototype.getAdminSession = function(callback, partnerId, userId){
+	if(!userId)
+		userId = "";
+	var kparams = new Object();
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.addParam(kparams, "userId", userId);
+	this.client.queueServiceActionCall("systemPartner", "getAdminSession", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	partnerId	int		 (optional).
+ * @param	configuration	KalturaSystemPartnerConfiguration		 (optional).
+ * @return	.
+ */
+KalturaSystemPartnerService.prototype.updateConfiguration = function(callback, partnerId, configuration){
+	var kparams = new Object();
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.addParam(kparams, "configuration", toParams(configuration));
+	this.client.queueServiceActionCall("systemPartner", "updateConfiguration", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @param	partnerId	int		 (optional).
+ * @return	KalturaSystemPartnerConfiguration.
+ */
+KalturaSystemPartnerService.prototype.getConfiguration = function(callback, partnerId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "partnerId", partnerId);
+	this.client.queueServiceActionCall("systemPartner", "getConfiguration", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @return	array.
+ */
+KalturaSystemPartnerService.prototype.getPackages = function(callback){
+	var kparams = new Object();
+	this.client.queueServiceActionCall("systemPartner", "getPackages", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: flavorParamsOutput.
+ * The available service actions:
+ * @action	list	List flavor params output objects by filter and pager
+ *	.
+*/
+function KalturaFlavorParamsOutputService(client){
+	this.init(client);
+}
+KalturaFlavorParamsOutputService.inheritsFrom (KalturaServiceBase);
+/**
+ * List flavor params output objects by filter and pager
+ *	.
+ * @param	filter	KalturaFlavorParamsOutputFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaFlavorParamsOutputListResponse.
+ */
+KalturaFlavorParamsOutputService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("flavorParamsOutput", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: thumbParamsOutput.
+ * The available service actions:
+ * @action	list	List thumb params output objects by filter and pager
+ *	.
+*/
+function KalturaThumbParamsOutputService(client){
+	this.init(client);
+}
+KalturaThumbParamsOutputService.inheritsFrom (KalturaServiceBase);
+/**
+ * List thumb params output objects by filter and pager
+ *	.
+ * @param	filter	KalturaThumbParamsOutputFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaThumbParamsOutputListResponse.
+ */
+KalturaThumbParamsOutputService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("thumbParamsOutput", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: mediaInfo.
+ * The available service actions:
+ * @action	list	List media info objects by filter and pager
+ *	.
+*/
+function KalturaMediaInfoService(client){
+	this.init(client);
+}
+KalturaMediaInfoService.inheritsFrom (KalturaServiceBase);
+/**
+ * List media info objects by filter and pager
+ *	.
+ * @param	filter	KalturaMediaInfoFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaMediaInfoListResponse.
+ */
+KalturaMediaInfoService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("mediaInfo", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: entryAdmin.
+ * The available service actions:
+ * @action	get	Get base entry by ID with no filters.
+ *	.
+ * @action	getTracks	Get base entry by ID with no filters.
+ *	.
+*/
+function KalturaEntryAdminService(client){
+	this.init(client);
+}
+KalturaEntryAdminService.inheritsFrom (KalturaServiceBase);
+/**
+ * Get base entry by ID with no filters.
+ *	.
+ * @param	entryId	string		Entry id (optional).
+ * @param	version	int		Desired version of the data (optional, default: -1).
+ * @return	KalturaBaseEntry.
+ */
+KalturaEntryAdminService.prototype.get = function(callback, entryId, version){
+	if(!version)
+		version = -1;
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.addParam(kparams, "version", version);
+	this.client.queueServiceActionCall("entryAdmin", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get base entry by ID with no filters.
+ *	.
+ * @param	entryId	string		Entry id (optional).
+ * @return	KalturaTrackEntryListResponse.
+ */
+KalturaEntryAdminService.prototype.getTracks = function(callback, entryId){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryId", entryId);
+	this.client.queueServiceActionCall("entryAdmin", "getTracks", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: KalturaInternalTools.
+ * The available service actions:
+*/
+function KalturaKalturaInternalToolsService(client){
+	this.init(client);
+}
+KalturaKalturaInternalToolsService.inheritsFrom (KalturaServiceBase);
+
+/**
+ *Class definition for the Kaltura service: kalturaInternalToolsSystemHelper.
+ * The available service actions:
+ * @action	fromSecureString	KS from Secure String
+ *	.
+ * @action	iptocountry	from ip to country
+ *	.
+ * @action	getRemoteAddress	.
+*/
+function KalturaKalturaInternalToolsSystemHelperService(client){
+	this.init(client);
+}
+KalturaKalturaInternalToolsSystemHelperService.inheritsFrom (KalturaServiceBase);
+/**
+ * KS from Secure String
+ *	.
+ * @param	str	string		 (optional).
+ * @return	KalturaInternalToolsSession.
+ */
+KalturaKalturaInternalToolsSystemHelperService.prototype.fromSecureString = function(callback, str){
+	var kparams = new Object();
+	this.client.addParam(kparams, "str", str);
+	this.client.queueServiceActionCall("kalturaInternalToolsSystemHelper", "fromSecureString", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * from ip to country
+ *	.
+ * @param	remote_addr	string		 (optional).
+ * @return	string.
+ */
+KalturaKalturaInternalToolsSystemHelperService.prototype.iptocountry = function(callback, remote_addr){
+	var kparams = new Object();
+	this.client.addParam(kparams, "remote_addr", remote_addr);
+	this.client.queueServiceActionCall("kalturaInternalToolsSystemHelper", "iptocountry", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * .
+ * @return	string.
+ */
+KalturaKalturaInternalToolsSystemHelperService.prototype.getRemoteAddress = function(callback){
+	var kparams = new Object();
+	this.client.queueServiceActionCall("kalturaInternalToolsSystemHelper", "getRemoteAddress", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
  *Class definition for the Kaltura service: auditTrail.
  * The available service actions:
  * @action	list	List audit trail objects by filter and pager
@@ -7850,100 +5170,6 @@ KalturaAuditTrailService.prototype.get = function(callback, id){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
 	this.client.queueServiceActionCall("auditTrail", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: annotation.
- * The available service actions:
- * @action	list	List annotation objects by filter and pager
- *	.
- * @action	add	Allows you to add an annotation object and Annotation content associated with Kaltura object
- *	.
- * @action	get	Retrieve an Annotation object by id
- *	.
- * @action	delete	delete annotation by id, and delete all children annotations
- *	.
- * @action	update	Update annotation by id 
- *	.
-*/
-function KalturaAnnotationService(client){
-	this.init(client);
-}
-KalturaAnnotationService.inheritsFrom (KalturaServiceBase);
-/**
- * List annotation objects by filter and pager
- *	.
- * @param	filter	KalturaAnnotationFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaAnnotationListResponse.
- */
-KalturaAnnotationService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("annotation", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Allows you to add an annotation object and Annotation content associated with Kaltura object
- *	.
- * @param	annotation	KalturaAnnotation		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.add = function(callback, annotation){
-	var kparams = new Object();
-	this.client.addParam(kparams, "annotation", toParams(annotation));
-	this.client.queueServiceActionCall("annotation", "add", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Retrieve an Annotation object by id
- *	.
- * @param	id	string		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.get = function(callback, id){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.queueServiceActionCall("annotation", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * delete annotation by id, and delete all children annotations
- *	.
- * @param	id	string		 (optional).
- * @return	.
- */
-KalturaAnnotationService.prototype.deleteAction = function(callback, id){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.queueServiceActionCall("annotation", "delete", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update annotation by id 
- *	.
- * @param	id	string		 (optional).
- * @param	annotation	KalturaAnnotation		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.update = function(callback, id, annotation){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "annotation", toParams(annotation));
-	this.client.queueServiceActionCall("annotation", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -8062,1549 +5288,887 @@ KalturaVirusScanProfileService.prototype.scan = function(callback, flavorAssetId
 }
 
 /**
- *Class definition for the Kaltura service: virusScanBatch.
+ *Class definition for the Kaltura service: distributionProfile.
  * The available service actions:
- * @action	getExclusiveVirusScanJobs	batch getExclusiveVirusScanJob action allows to get a BatchJob of type VIRUS_SCAN 
+ * @action	add	Add new Distribution Profile
  *	.
- * @action	updateExclusiveVirusScanJob	batch updateExclusiveVirusScanJob action updates a BatchJob of type VIRUS_SCAN that was claimed using the getExclusiveVirusScanJobs
+ * @action	get	Get Distribution Profile by id
  *	.
- * @action	freeExclusiveVirusScanJob	batch freeExclusiveVirusScanJob action frees a BatchJob of type VirusScan that was claimed using the getExclusiveVirusScanJobs
+ * @action	update	Update Distribution Profile by id
  *	.
- * @action	getExclusiveImportJobs	batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
+ * @action	updateStatus	Update Distribution Profile status by id
  *	.
- * @action	updateExclusiveImportJob	batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
+ * @action	delete	Delete Distribution Profile by id
  *	.
- * @action	freeExclusiveImportJob	batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
+ * @action	list	List all distribution providers
  *	.
- * @action	getExclusiveBulkUploadJobs	batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @action	getExclusiveAlmostDoneBulkUploadJobs	batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkUploadJob	batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	freeExclusiveBulkUploadJob	batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @action	addBulkUploadResult	batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getBulkUploadLastResult	batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @action	updateBulkUploadResults	batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @action	getExclusiveAlmostDoneRemoteConvertJobs	batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveRemoteConvertJob	batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveRemoteConvertJob	batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveAlmostDoneConvertCollectionJobs	batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @action	getExclusiveAlmostDoneConvertProfileJobs	batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertCollectionJob	batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertProfileJob	batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertCollectionJob	batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertProfileJob	batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusiveConvertCollectionJobs	batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @action	getExclusiveConvertJobs	batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @action	getExclusiveAlmostDoneConvertJobs	batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @action	updateExclusiveConvertJob	batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	updateExclusiveConvertJobSubType	batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	freeExclusiveConvertJob	batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @action	getExclusivePostConvertJobs	batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @action	updateExclusivePostConvertJob	batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	freeExclusivePostConvertJob	batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @action	getExclusivePullJobs	batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @action	updateExclusivePullJob	batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @action	freeExclusivePullJob	batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @action	getExclusiveExtractMediaJobs	batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @action	updateExclusiveExtractMediaJob	batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	addMediaInfo	batch addMediaInfoAction action saves a media info object
- *	.
- * @action	freeExclusiveExtractMediaJob	batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @action	getExclusiveStorageExportJobs	batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @action	updateExclusiveStorageExportJob	batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	freeExclusiveStorageExportJob	batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @action	getExclusiveStorageDeleteJobs	batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @action	updateExclusiveStorageDeleteJob	batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	freeExclusiveStorageDeleteJob	batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @action	getExclusiveNotificationJobs	batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @action	updateExclusiveNotificationJob	batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	freeExclusiveNotificationJob	batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @action	getExclusiveMailJobs	batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @action	updateExclusiveMailJob	batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	freeExclusiveMailJob	batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @action	getExclusiveBulkDownloadJobs	batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @action	getExclusiveAlmostDoneBulkDownloadJobs	batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @action	updateExclusiveBulkDownloadJob	batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	freeExclusiveBulkDownloadJob	batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @action	getExclusiveProvisionProvideJobs	batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @action	getExclusiveAlmostDoneProvisionProvideJobs	batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionProvideJob	batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	freeExclusiveProvisionProvideJob	batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @action	getExclusiveProvisionDeleteJobs	batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @action	getExclusiveAlmostDoneProvisionDeleteJobs	batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @action	updateExclusiveProvisionDeleteJob	batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	freeExclusiveProvisionDeleteJob	batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @action	resetJobExecutionAttempts	batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @action	freeExclusiveJob	batch freeExclusiveJobAction action allows to get a generic BatchJob 
- *	.
- * @action	getQueueSize	batch getQueueSize action get the queue size for job type 
- *	.
- * @action	getExclusiveJobs	batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @action	getExclusiveAlmostDone	batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @action	updateExclusiveJob	batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
- *	.
- * @action	cleanExclusiveJobs	batch cleanExclusiveJobs action mark as fatal error all expired jobs
- *	.
- * @action	logConversion	Add the data to the flavor asset conversion log, creates it if doesn't exists
- *	.
+ * @action	listByPartner	.
 */
-function KalturaVirusScanBatchService(client){
+function KalturaDistributionProfileService(client){
 	this.init(client);
 }
-KalturaVirusScanBatchService.inheritsFrom (KalturaServiceBase);
+KalturaDistributionProfileService.inheritsFrom (KalturaServiceBase);
 /**
- * batch getExclusiveVirusScanJob action allows to get a BatchJob of type VIRUS_SCAN 
+ * Add new Distribution Profile
  *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
+ * @param	distributionProfile	KalturaDistributionProfile		 (optional).
+ * @return	KalturaDistributionProfile.
  */
-KalturaVirusScanBatchService.prototype.getExclusiveVirusScanJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
+KalturaDistributionProfileService.prototype.add = function(callback, distributionProfile){
 	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveVirusScanJobs", kparams);
+	this.client.addParam(kparams, "distributionProfile", toParams(distributionProfile));
+	this.client.queueServiceActionCall("distributionProfile", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch updateExclusiveVirusScanJob action updates a BatchJob of type VIRUS_SCAN that was claimed using the getExclusiveVirusScanJobs
+ * Get Distribution Profile by id
  *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
+ * @param	id	int		 (optional).
+ * @return	KalturaDistributionProfile.
  */
-KalturaVirusScanBatchService.prototype.updateExclusiveVirusScanJob = function(callback, id, lockKey, job){
+KalturaDistributionProfileService.prototype.get = function(callback, id){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveVirusScanJob", kparams);
+	this.client.queueServiceActionCall("distributionProfile", "get", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch freeExclusiveVirusScanJob action frees a BatchJob of type VirusScan that was claimed using the getExclusiveVirusScanJobs
+ * Update Distribution Profile by id
  *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
+ * @param	id	int		 (optional).
+ * @param	distributionProfile	KalturaDistributionProfile		 (optional).
+ * @return	KalturaDistributionProfile.
  */
-KalturaVirusScanBatchService.prototype.freeExclusiveVirusScanJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
+KalturaDistributionProfileService.prototype.update = function(callback, id, distributionProfile){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveVirusScanJob", kparams);
+	this.client.addParam(kparams, "distributionProfile", toParams(distributionProfile));
+	this.client.queueServiceActionCall("distributionProfile", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch getExclusiveImportJob action allows to get a BatchJob of type IMPORT 
+ * Update Distribution Profile status by id
  *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
+ * @param	id	int		 (optional).
+ * @param	status	int		 (optional, enum: KalturaDistributionProfileStatus).
+ * @return	KalturaDistributionProfile.
  */
-KalturaVirusScanBatchService.prototype.getExclusiveImportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveImportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveImportJob action updates a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveImportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
+KalturaDistributionProfileService.prototype.updateStatus = function(callback, id, status){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveImportJob", kparams);
+	this.client.addParam(kparams, "status", status);
+	this.client.queueServiceActionCall("distributionProfile", "updateStatus", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch freeExclusiveImportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveImportJobs
+ * Delete Distribution Profile by id
  *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveImportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveImportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkUploadJob action allows to get a BatchJob of type BULKUPLOAD 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkUploadJobs action allows to get a BatchJob of type BULKUPLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneBulkUploadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneBulkUploadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkUploadJob action updates a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveBulkUploadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkUploadJob action frees a BatchJob of type BULKUPLOAD that was claimed using the getExclusiveBulkUploadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveBulkUploadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveBulkUploadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addBulkUploadResultAction action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadResult	KalturaBulkUploadResult		The results to save to the DB (optional).
- * @param	pluginDataArray	array		 (optional, default: null).
- * @return	KalturaBulkUploadResult.
- */
-KalturaVirusScanBatchService.prototype.addBulkUploadResult = function(callback, bulkUploadResult, pluginDataArray){
-	if(!pluginDataArray)
-		pluginDataArray = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadResult", toParams(bulkUploadResult));
-	if(pluginDataArray != null)
-	for(var index in pluginDataArray)
-	{
-		var obj = pluginDataArray[index];
-		this.client.addParam(kparams, "pluginDataArray:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("virusScanBatch", "addBulkUploadResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getBulkUploadLastResultAction action returns the last result of the bulk upload
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	KalturaBulkUploadResult.
- */
-KalturaVirusScanBatchService.prototype.getBulkUploadLastResult = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("virusScanBatch", "getBulkUploadLastResult", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateBulkUploadResults action adds KalturaBulkUploadResult to the DB
- *	.
- * @param	bulkUploadJobId	int		The id of the bulk upload job (optional).
- * @return	int.
- */
-KalturaVirusScanBatchService.prototype.updateBulkUploadResults = function(callback, bulkUploadJobId){
-	var kparams = new Object();
-	this.client.addParam(kparams, "bulkUploadJobId", bulkUploadJobId);
-	this.client.queueServiceActionCall("virusScanBatch", "updateBulkUploadResults", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneRemoteConvertJobsAction action allows to get a BatchJob of type REMOTE_CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneRemoteConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneRemoteConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveRemoteConvertJobAction action updates a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveRemoteConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveRemoteConvertJobAction action frees a BatchJob of type REMOTE_CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveRemoteConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveRemoteConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertCollectionJobs action allows to get a BatchJob of type CONVERT_COLLECTION that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertProfileJobs action allows to get a BatchJob of type CONVERT_PROFILE that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneConvertProfileJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneConvertProfileJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertCollectionJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change (optional, enum: KalturaEntryStatus, default: null).
- * @param	flavorsData	array		 (optional, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveConvertCollectionJob = function(callback, id, lockKey, job, entryStatus, flavorsData){
-	if(!entryStatus)
-		entryStatus = null;
-	if(!flavorsData)
-		flavorsData = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	if(flavorsData != null)
-	for(var index in flavorsData)
-	{
-		var obj = flavorsData[index];
-		this.client.addParam(kparams, "flavorsData:" + index, toParams(obj));
-	}
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertProfileJobAction action updates a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveConvertProfileJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertCollectionJobAction action frees a BatchJob of type CONVERT_COLLECTION that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveConvertCollectionJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveConvertCollectionJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertProfileJobAction action frees a BatchJob of type CONVERT_PROFILE that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveConvertProfileJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveConvertProfileJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertCollectionJob action allows to get a BatchJob of type CONVERT_COLLECTION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveConvertCollectionJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveConvertCollectionJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveConvertJob action allows to get a BatchJob of type CONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneConvertJobsAction action allows to get a BatchJob of type CONVERT that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJob action updates a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveConvertJobSubType action updates the sub type for a BatchJob of type CONVERT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	subType	int		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveConvertJobSubType = function(callback, id, lockKey, subType){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "subType", subType);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveConvertJobSubType", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePostConvertJob action allows to get a BatchJob of type POSTCONVERT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusivePostConvertJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusivePostConvertJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePostConvertJob action updates a BatchJob of type POSTCONVERT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusivePostConvertJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePostConvertJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePostConvertJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusivePostConvertJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusivePostConvertJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusivePullJob action allows to get a BatchJob of type PULL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusivePullJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusivePullJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusivePullJob action updates a BatchJob of type PULL that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusivePullJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusivePullJob action frees a BatchJob of type IMPORT that was claimed using the getExclusivePullJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusivePullJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusivePullJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveExtractMediaJob action allows to get a BatchJob of type EXTRACT_MEDIA 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveExtractMediaJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveExtractMediaJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveExtractMediaJob action updates a BatchJob of type EXTRACT_MEDIA that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveExtractMediaJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch addMediaInfoAction action saves a media info object
- *	.
- * @param	mediaInfo	KalturaMediaInfo		 (optional).
- * @return	KalturaMediaInfo.
- */
-KalturaVirusScanBatchService.prototype.addMediaInfo = function(callback, mediaInfo){
-	var kparams = new Object();
-	this.client.addParam(kparams, "mediaInfo", toParams(mediaInfo));
-	this.client.queueServiceActionCall("virusScanBatch", "addMediaInfo", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveExtractMediaJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveExtractMediaJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveExtractMediaJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveExtractMediaJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageExportJob action allows to get a BatchJob of type STORAGE_EXPORT 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveStorageExportJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveStorageExportJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageExportJob action updates a BatchJob of type STORAGE_EXPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveStorageExportJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageExportJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageExportJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveStorageExportJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveStorageExportJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveStorageDeleteJob action allows to get a BatchJob of type STORAGE_DELETE 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveStorageDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveStorageDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveStorageDeleteJob action updates a BatchJob of type StorageDelete that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveStorageDeleteJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveStorageDeleteJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveStorageDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveStorageDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveStorageDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveNotificationJob action allows to get a BatchJob of type NOTIFICATION 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	KalturaBatchGetExclusiveNotificationJobsResponse.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveNotificationJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveNotificationJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveNotificationJob action updates a BatchJob of type NOTIFICATION that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveNotificationJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveNotificationJob action frees a BatchJob of type IMPORT that was claimed using the getExclusiveNotificationJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveNotificationJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveNotificationJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveMailJob action allows to get a BatchJob of type MAIL 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveMailJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveMailJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveMailJob action updates a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveMailJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveMailJob action frees a BatchJob of type MAIL that was claimed using the getExclusiveMailJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveMailJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveMailJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneBulkDownloadJobs action allows to get a BatchJob of type BULKDOWNLOAD that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneBulkDownloadJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneBulkDownloadJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveBulkDownloadJob action updates a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveBulkDownloadJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveBulkDownloadJob action frees a BatchJob of type BULKDOWNLOAD that was claimed using the getExclusiveBulkDownloadJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveBulkDownloadJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveBulkDownloadJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionProvideJobs action allows to get a BatchJob of type ProvisionProvide that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneProvisionProvideJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneProvisionProvideJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionProvideJob action updates a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveProvisionProvideJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionProvideJob action frees a BatchJob of type ProvisionProvide that was claimed using the getExclusiveProvisionProvideJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveProvisionProvideJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveProvisionProvideJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveAlmostDoneProvisionDeleteJobs action allows to get a BatchJob of type ProvisionDelete that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDoneProvisionDeleteJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter){
-	if(!filter)
-		filter = null;
-	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDoneProvisionDeleteJobs", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch updateExclusiveProvisionDeleteJob action updates a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @return	KalturaBatchJob.
- */
-KalturaVirusScanBatchService.prototype.updateExclusiveProvisionDeleteJob = function(callback, id, lockKey, job){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch freeExclusiveProvisionDeleteJob action frees a BatchJob of type ProvisionDelete that was claimed using the getExclusiveProvisionDeleteJobs
- *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
- */
-KalturaVirusScanBatchService.prototype.freeExclusiveProvisionDeleteJob = function(callback, id, lockKey, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveProvisionDeleteJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch resetJobExecutionAttempts action resets the execution attempts of the job 
- *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
+ * @param	id	int		 (optional).
  * @return	.
  */
-KalturaVirusScanBatchService.prototype.resetJobExecutionAttempts = function(callback, id, lockKey, jobType){
+KalturaDistributionProfileService.prototype.deleteAction = function(callback, id){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("virusScanBatch", "resetJobExecutionAttempts", kparams);
+	this.client.queueServiceActionCall("distributionProfile", "delete", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch freeExclusiveJobAction action allows to get a generic BatchJob 
+ * List all distribution providers
  *	.
- * @param	id	int		The id of the job (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism (optional).
- * @param	jobType	string		The type of the job   (optional, enum: KalturaBatchJobType).
- * @param	resetExecutionAttempts	bool		Resets the job execution attampts to zero   (optional, default: false).
- * @return	KalturaFreeJobResponse.
+ * @param	filter	KalturaDistributionProfileFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaDistributionProfileListResponse.
  */
-KalturaVirusScanBatchService.prototype.freeExclusiveJob = function(callback, id, lockKey, jobType, resetExecutionAttempts){
-	if(!resetExecutionAttempts)
-		resetExecutionAttempts = false;
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.addParam(kparams, "resetExecutionAttempts", resetExecutionAttempts);
-	this.client.queueServiceActionCall("virusScanBatch", "freeExclusiveJob", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getQueueSize action get the queue size for job type 
- *	.
- * @param	workerQueueFilter	KalturaWorkerQueueFilter		The worker filter   (optional).
- * @return	int.
- */
-KalturaVirusScanBatchService.prototype.getQueueSize = function(callback, workerQueueFilter){
-	var kparams = new Object();
-	this.client.addParam(kparams, "workerQueueFilter", toParams(workerQueueFilter));
-	this.client.queueServiceActionCall("virusScanBatch", "getQueueSize", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * batch getExclusiveJobsAction action allows to get a BatchJob 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
- */
-KalturaVirusScanBatchService.prototype.getExclusiveJobs = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
+KalturaDistributionProfileService.prototype.listAction = function(callback, filter, pager){
 	if(!filter)
 		filter = null;
-	if(!jobType)
-		jobType = null;
+	if(!pager)
+		pager = null;
 	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
 	if (filter != null)
 		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveJobs", kparams);
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("distributionProfile", "list", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch getExclusiveAlmostDone action allows to get a BatchJob that wait for remote closure 
- *	.
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	maxExecutionTime	int		The maximum time in seconds the job reguarly take. Is used for the locking mechanism when determining an unexpected termination of a batch-process. (optional).
- * @param	numberOfJobs	int		The maximum number of jobs to return.  (optional).
- * @param	filter	KalturaBatchJobFilter		Set of rules to fetch only rartial list of jobs   (optional, default: null).
- * @param	jobType	string		The type of the job - could be a custom extended type (optional, enum: KalturaBatchJobType, default: null).
- * @return	array.
+ * .
+ * @param	filter	KalturaPartnerFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaDistributionProfileListResponse.
  */
-KalturaVirusScanBatchService.prototype.getExclusiveAlmostDone = function(callback, lockKey, maxExecutionTime, numberOfJobs, filter, jobType){
+KalturaDistributionProfileService.prototype.listByPartner = function(callback, filter, pager){
 	if(!filter)
 		filter = null;
-	if(!jobType)
-		jobType = null;
+	if(!pager)
+		pager = null;
 	var kparams = new Object();
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "maxExecutionTime", maxExecutionTime);
-	this.client.addParam(kparams, "numberOfJobs", numberOfJobs);
 	if (filter != null)
 		this.client.addParam(kparams, "filter", toParams(filter));
-	this.client.addParam(kparams, "jobType", jobType);
-	this.client.queueServiceActionCall("virusScanBatch", "getExclusiveAlmostDone", kparams);
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("distributionProfile", "listByPartner", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: entryDistribution.
+ * The available service actions:
+ * @action	add	Add new Entry Distribution
+ *	.
+ * @action	get	Get Entry Distribution by id
+ *	.
+ * @action	validate	Validates Entry Distribution by id for submission
+ *	.
+ * @action	update	Update Entry Distribution by id
+ *	.
+ * @action	delete	Delete Entry Distribution by id
+ *	.
+ * @action	list	List all distribution providers
+ *	.
+ * @action	submitAdd	Submits Entry Distribution to the remote destination
+ *	.
+ * @action	submitUpdate	Submits Entry Distribution changes to the remote destination
+ *	.
+ * @action	submitFetchReport	Submits Entry Distribution report request
+ *	.
+ * @action	submitDelete	Deletes Entry Distribution from the remote destination
+ *	.
+ * @action	retrySubmit	Retries last submit action
+ *	.
+*/
+function KalturaEntryDistributionService(client){
+	this.init(client);
+}
+KalturaEntryDistributionService.inheritsFrom (KalturaServiceBase);
+/**
+ * Add new Entry Distribution
+ *	.
+ * @param	entryDistribution	KalturaEntryDistribution		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.add = function(callback, entryDistribution){
+	var kparams = new Object();
+	this.client.addParam(kparams, "entryDistribution", toParams(entryDistribution));
+	this.client.queueServiceActionCall("entryDistribution", "add", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch updateExclusiveJobAction action updates a BatchJob of extended type that was claimed using the getExclusiveJobs
+ * Get Entry Distribution by id
  *	.
- * @param	id	int		The id of the job to free (optional).
- * @param	lockKey	KalturaExclusiveLockKey		The unique lock key from the batch-process. Is used for the locking mechanism   (optional).
- * @param	job	KalturaBatchJob		 (optional).
- * @param	entryStatus	string		Optional parameter if the entry of the batch should change  (optional, enum: KalturaEntryStatus, default: null).
- * @return	KalturaBatchJob.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
  */
-KalturaVirusScanBatchService.prototype.updateExclusiveJob = function(callback, id, lockKey, job, entryStatus){
-	if(!entryStatus)
-		entryStatus = null;
+KalturaEntryDistributionService.prototype.get = function(callback, id){
 	var kparams = new Object();
 	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "lockKey", toParams(lockKey));
-	this.client.addParam(kparams, "job", toParams(job));
-	this.client.addParam(kparams, "entryStatus", entryStatus);
-	this.client.queueServiceActionCall("virusScanBatch", "updateExclusiveJob", kparams);
+	this.client.queueServiceActionCall("entryDistribution", "get", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * batch cleanExclusiveJobs action mark as fatal error all expired jobs
+ * Validates Entry Distribution by id for submission
  *	.
- * @return	int.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
  */
-KalturaVirusScanBatchService.prototype.cleanExclusiveJobs = function(callback){
+KalturaEntryDistributionService.prototype.validate = function(callback, id){
 	var kparams = new Object();
-	this.client.queueServiceActionCall("virusScanBatch", "cleanExclusiveJobs", kparams);
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "validate", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
 /**
- * Add the data to the flavor asset conversion log, creates it if doesn't exists
+ * Update Entry Distribution by id
  *	.
- * @param	flavorAssetId	string		 (optional).
- * @param	data	string		 (optional).
+ * @param	id	int		 (optional).
+ * @param	entryDistribution	KalturaEntryDistribution		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.update = function(callback, id, entryDistribution){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "entryDistribution", toParams(entryDistribution));
+	this.client.queueServiceActionCall("entryDistribution", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete Entry Distribution by id
+ *	.
+ * @param	id	int		 (optional).
  * @return	.
  */
-KalturaVirusScanBatchService.prototype.logConversion = function(callback, flavorAssetId, data){
+KalturaEntryDistributionService.prototype.deleteAction = function(callback, id){
 	var kparams = new Object();
-	this.client.addParam(kparams, "flavorAssetId", flavorAssetId);
-	this.client.addParam(kparams, "data", data);
-	this.client.queueServiceActionCall("virusScanBatch", "logConversion", kparams);
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List all distribution providers
+ *	.
+ * @param	filter	KalturaEntryDistributionFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaEntryDistributionListResponse.
+ */
+KalturaEntryDistributionService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("entryDistribution", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Submits Entry Distribution to the remote destination
+ *	.
+ * @param	id	int		 (optional).
+ * @param	submitWhenReady	bool		 (optional, default: false).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.submitAdd = function(callback, id, submitWhenReady){
+	if(!submitWhenReady)
+		submitWhenReady = false;
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "submitWhenReady", submitWhenReady);
+	this.client.queueServiceActionCall("entryDistribution", "submitAdd", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Submits Entry Distribution changes to the remote destination
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.submitUpdate = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "submitUpdate", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Submits Entry Distribution report request
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.submitFetchReport = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "submitFetchReport", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Deletes Entry Distribution from the remote destination
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.submitDelete = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "submitDelete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retries last submit action
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaEntryDistribution.
+ */
+KalturaEntryDistributionService.prototype.retrySubmit = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("entryDistribution", "retrySubmit", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: distributionProvider.
+ * The available service actions:
+ * @action	list	List all distribution providers
+ *	.
+*/
+function KalturaDistributionProviderService(client){
+	this.init(client);
+}
+KalturaDistributionProviderService.inheritsFrom (KalturaServiceBase);
+/**
+ * List all distribution providers
+ *	.
+ * @param	filter	KalturaDistributionProviderFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaDistributionProviderListResponse.
+ */
+KalturaDistributionProviderService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("distributionProvider", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: genericDistributionProvider.
+ * The available service actions:
+ * @action	add	Add new Generic Distribution Provider
+ *	.
+ * @action	get	Get Generic Distribution Provider by id
+ *	.
+ * @action	update	Update Generic Distribution Provider by id
+ *	.
+ * @action	delete	Delete Generic Distribution Provider by id
+ *	.
+ * @action	list	List all distribution providers
+ *	.
+*/
+function KalturaGenericDistributionProviderService(client){
+	this.init(client);
+}
+KalturaGenericDistributionProviderService.inheritsFrom (KalturaServiceBase);
+/**
+ * Add new Generic Distribution Provider
+ *	.
+ * @param	genericDistributionProvider	KalturaGenericDistributionProvider		 (optional).
+ * @return	KalturaGenericDistributionProvider.
+ */
+KalturaGenericDistributionProviderService.prototype.add = function(callback, genericDistributionProvider){
+	var kparams = new Object();
+	this.client.addParam(kparams, "genericDistributionProvider", toParams(genericDistributionProvider));
+	this.client.queueServiceActionCall("genericDistributionProvider", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get Generic Distribution Provider by id
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaGenericDistributionProvider.
+ */
+KalturaGenericDistributionProviderService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("genericDistributionProvider", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update Generic Distribution Provider by id
+ *	.
+ * @param	id	int		 (optional).
+ * @param	genericDistributionProvider	KalturaGenericDistributionProvider		 (optional).
+ * @return	KalturaGenericDistributionProvider.
+ */
+KalturaGenericDistributionProviderService.prototype.update = function(callback, id, genericDistributionProvider){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "genericDistributionProvider", toParams(genericDistributionProvider));
+	this.client.queueServiceActionCall("genericDistributionProvider", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete Generic Distribution Provider by id
+ *	.
+ * @param	id	int		 (optional).
+ * @return	.
+ */
+KalturaGenericDistributionProviderService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("genericDistributionProvider", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List all distribution providers
+ *	.
+ * @param	filter	KalturaGenericDistributionProviderFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaGenericDistributionProviderListResponse.
+ */
+KalturaGenericDistributionProviderService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("genericDistributionProvider", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: genericDistributionProviderAction.
+ * The available service actions:
+ * @action	add	Add new Generic Distribution Provider Action
+ *	.
+ * @action	addMrssTransform	Add MRSS transform file to generic distribution provider action
+ *	.
+ * @action	addMrssTransformFromFile	Add MRSS transform file to generic distribution provider action
+ *	.
+ * @action	addMrssValidate	Add MRSS validate file to generic distribution provider action
+ *	.
+ * @action	addMrssValidateFromFile	Add MRSS validate file to generic distribution provider action
+ *	.
+ * @action	addResultsTransform	Add results transform file to generic distribution provider action
+ *	.
+ * @action	addResultsTransformFromFile	Add MRSS transform file to generic distribution provider action
+ *	.
+ * @action	get	Get Generic Distribution Provider Action by id
+ *	.
+ * @action	getByProviderId	Get Generic Distribution Provider Action by provider id
+ *	.
+ * @action	updateByProviderId	Update Generic Distribution Provider Action by provider id
+ *	.
+ * @action	update	Update Generic Distribution Provider Action by id
+ *	.
+ * @action	delete	Delete Generic Distribution Provider Action by id
+ *	.
+ * @action	deleteByProviderId	Delete Generic Distribution Provider Action by provider id
+ *	.
+ * @action	list	List all distribution providers
+ *	.
+*/
+function KalturaGenericDistributionProviderActionService(client){
+	this.init(client);
+}
+KalturaGenericDistributionProviderActionService.inheritsFrom (KalturaServiceBase);
+/**
+ * Add new Generic Distribution Provider Action
+ *	.
+ * @param	genericDistributionProviderAction	KalturaGenericDistributionProviderAction		 (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.add = function(callback, genericDistributionProviderAction){
+	var kparams = new Object();
+	this.client.addParam(kparams, "genericDistributionProviderAction", toParams(genericDistributionProviderAction));
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add MRSS transform file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	xslData	string		XSL MRSS transformation data (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addMrssTransform = function(callback, id, xslData){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "xslData", xslData);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addMrssTransform", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add MRSS transform file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	xslFile	file		XSL MRSS transformation file (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addMrssTransformFromFile = function(callback, id, xslFile){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	kfiles = new Object();
+	this.client.addParam(kfiles, "xslFile", xslFile);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addMrssTransformFromFile", kparams, kfiles);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add MRSS validate file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	xsdData	string		XSD MRSS validatation data (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addMrssValidate = function(callback, id, xsdData){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "xsdData", xsdData);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addMrssValidate", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add MRSS validate file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	xsdFile	file		XSD MRSS validatation file (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addMrssValidateFromFile = function(callback, id, xsdFile){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	kfiles = new Object();
+	this.client.addParam(kfiles, "xsdFile", xsdFile);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addMrssValidateFromFile", kparams, kfiles);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add results transform file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	transformData	string		transformation data xsl, xPath or regex (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addResultsTransform = function(callback, id, transformData){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "transformData", transformData);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addResultsTransform", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Add MRSS transform file to generic distribution provider action
+ *	.
+ * @param	id	int		the id of the generic distribution provider action (optional).
+ * @param	transformFile	file		transformation file xsl, xPath or regex (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.addResultsTransformFromFile = function(callback, id, transformFile){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	kfiles = new Object();
+	this.client.addParam(kfiles, "transformFile", transformFile);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "addResultsTransformFromFile", kparams, kfiles);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get Generic Distribution Provider Action by id
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Get Generic Distribution Provider Action by provider id
+ *	.
+ * @param	genericDistributionProviderId	int		 (optional).
+ * @param	actionType	int		 (optional, enum: KalturaDistributionAction).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.getByProviderId = function(callback, genericDistributionProviderId, actionType){
+	var kparams = new Object();
+	this.client.addParam(kparams, "genericDistributionProviderId", genericDistributionProviderId);
+	this.client.addParam(kparams, "actionType", actionType);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "getByProviderId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update Generic Distribution Provider Action by provider id
+ *	.
+ * @param	genericDistributionProviderId	int		 (optional).
+ * @param	actionType	int		 (optional, enum: KalturaDistributionAction).
+ * @param	genericDistributionProviderAction	KalturaGenericDistributionProviderAction		 (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.updateByProviderId = function(callback, genericDistributionProviderId, actionType, genericDistributionProviderAction){
+	var kparams = new Object();
+	this.client.addParam(kparams, "genericDistributionProviderId", genericDistributionProviderId);
+	this.client.addParam(kparams, "actionType", actionType);
+	this.client.addParam(kparams, "genericDistributionProviderAction", toParams(genericDistributionProviderAction));
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "updateByProviderId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update Generic Distribution Provider Action by id
+ *	.
+ * @param	id	int		 (optional).
+ * @param	genericDistributionProviderAction	KalturaGenericDistributionProviderAction		 (optional).
+ * @return	KalturaGenericDistributionProviderAction.
+ */
+KalturaGenericDistributionProviderActionService.prototype.update = function(callback, id, genericDistributionProviderAction){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "genericDistributionProviderAction", toParams(genericDistributionProviderAction));
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete Generic Distribution Provider Action by id
+ *	.
+ * @param	id	int		 (optional).
+ * @return	.
+ */
+KalturaGenericDistributionProviderActionService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete Generic Distribution Provider Action by provider id
+ *	.
+ * @param	genericDistributionProviderId	int		 (optional).
+ * @param	actionType	int		 (optional, enum: KalturaDistributionAction).
+ * @return	.
+ */
+KalturaGenericDistributionProviderActionService.prototype.deleteByProviderId = function(callback, genericDistributionProviderId, actionType){
+	var kparams = new Object();
+	this.client.addParam(kparams, "genericDistributionProviderId", genericDistributionProviderId);
+	this.client.addParam(kparams, "actionType", actionType);
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "deleteByProviderId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * List all distribution providers
+ *	.
+ * @param	filter	KalturaGenericDistributionProviderActionFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaGenericDistributionProviderActionListResponse.
+ */
+KalturaGenericDistributionProviderActionService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("genericDistributionProviderAction", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: annotation.
+ * The available service actions:
+ * @action	list	List annotation objects by filter and pager
+ *	.
+ * @action	add	Allows you to add an annotation object and Annotation content associated with Kaltura object
+ *	.
+ * @action	get	Retrieve an Annotation object by id
+ *	.
+ * @action	delete	delete annotation by id, and delete all children annotations
+ *	.
+ * @action	update	Update annotation by id 
+ *	.
+*/
+function KalturaAnnotationService(client){
+	this.init(client);
+}
+KalturaAnnotationService.inheritsFrom (KalturaServiceBase);
+/**
+ * List annotation objects by filter and pager
+ *	.
+ * @param	filter	KalturaAnnotationFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaAnnotationListResponse.
+ */
+KalturaAnnotationService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("annotation", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Allows you to add an annotation object and Annotation content associated with Kaltura object
+ *	.
+ * @param	annotation	KalturaAnnotation		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.add = function(callback, annotation){
+	var kparams = new Object();
+	this.client.addParam(kparams, "annotation", toParams(annotation));
+	this.client.queueServiceActionCall("annotation", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve an Annotation object by id
+ *	.
+ * @param	id	string		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("annotation", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * delete annotation by id, and delete all children annotations
+ *	.
+ * @param	id	string		 (optional).
+ * @return	.
+ */
+KalturaAnnotationService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("annotation", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update annotation by id 
+ *	.
+ * @param	id	string		 (optional).
+ * @param	annotation	KalturaAnnotation		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.update = function(callback, id, annotation){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "annotation", toParams(annotation));
+	this.client.queueServiceActionCall("annotation", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: shortLink.
+ * The available service actions:
+ * @action	list	List short link objects by filter and pager
+ *	.
+ * @action	add	Allows you to add a short link object
+ *	.
+ * @action	get	Retrieve an short link object by id
+ *	.
+ * @action	update	Update exisitng short link
+ *	.
+ * @action	delete	Mark the short link as deleted
+ *	.
+*/
+function KalturaShortLinkService(client){
+	this.init(client);
+}
+KalturaShortLinkService.inheritsFrom (KalturaServiceBase);
+/**
+ * List short link objects by filter and pager
+ *	.
+ * @param	filter	KalturaShortLinkFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaShortLinkListResponse.
+ */
+KalturaShortLinkService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("shortLink", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Allows you to add a short link object
+ *	.
+ * @param	shortLink	KalturaShortLink		 (optional).
+ * @return	KalturaShortLink.
+ */
+KalturaShortLinkService.prototype.add = function(callback, shortLink){
+	var kparams = new Object();
+	this.client.addParam(kparams, "shortLink", toParams(shortLink));
+	this.client.queueServiceActionCall("shortLink", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve an short link object by id
+ *	.
+ * @param	id	string		 (optional).
+ * @return	KalturaShortLink.
+ */
+KalturaShortLinkService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("shortLink", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update exisitng short link
+ *	.
+ * @param	id	string		 (optional).
+ * @param	shortLink	KalturaShortLink		 (optional).
+ * @return	KalturaShortLink.
+ */
+KalturaShortLinkService.prototype.update = function(callback, id, shortLink){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "shortLink", toParams(shortLink));
+	this.client.queueServiceActionCall("shortLink", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Mark the short link as deleted
+ *	.
+ * @param	id	string		 (optional).
+ * @return	KalturaShortLink.
+ */
+KalturaShortLinkService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("shortLink", "delete", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }

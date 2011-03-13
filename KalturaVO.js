@@ -26,6 +26,361 @@ KalturaMetadataSearchItem.inheritsFrom (KalturaSearchOperator);
 
 
 /**
+ * @param	noDistributionProfiles	bool		.
+ * @param	distributionProfileId	int		.
+ * @param	distributionSunStatus	int		.
+ * @param	entryDistributionFlag	int		.
+ * @param	entryDistributionStatus	int		.
+ * @param	hasEntryDistributionValidationErrors	bool		.
+ * @param	entryDistributionValidationErrors	string		Comma seperated validation error types.
+ */
+function KalturaContentDistributionSearchItem(){
+	this.noDistributionProfiles = null;
+	this.distributionProfileId = null;
+	this.distributionSunStatus = null;
+	this.entryDistributionFlag = null;
+	this.entryDistributionStatus = null;
+	this.hasEntryDistributionValidationErrors = null;
+	this.entryDistributionValidationErrors = null;
+}
+KalturaContentDistributionSearchItem.inheritsFrom (KalturaSearchItem);
+
+
+/**
+ */
+function KalturaAuditTrailInfo(){
+}
+KalturaAuditTrailInfo.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	descriptor	string		.
+ * @param	oldValue	string		.
+ * @param	newValue	string		.
+ */
+function KalturaAuditTrailChangeItem(){
+	this.descriptor = null;
+	this.oldValue = null;
+	this.newValue = null;
+}
+KalturaAuditTrailChangeItem.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	changedItems	array		.
+ */
+function KalturaAuditTrailChangeInfo(){
+	this.changedItems = null;
+}
+KalturaAuditTrailChangeInfo.inheritsFrom (KalturaAuditTrailInfo);
+
+
+/**
+ * @param	version	string		.
+ * @param	objectSubType	int		.
+ * @param	dc	int		.
+ * @param	original	bool		.
+ * @param	fileType	int		.
+ */
+function KalturaAuditTrailFileSyncCreateInfo(){
+	this.version = null;
+	this.objectSubType = null;
+	this.dc = null;
+	this.original = null;
+	this.fileType = null;
+}
+KalturaAuditTrailFileSyncCreateInfo.inheritsFrom (KalturaAuditTrailInfo);
+
+
+/**
+ * @param	info	string		.
+ */
+function KalturaAuditTrailTextInfo(){
+	this.info = null;
+}
+KalturaAuditTrailTextInfo.inheritsFrom (KalturaAuditTrailInfo);
+
+
+/**
+ */
+function KalturaDynamicEnum(){
+}
+KalturaDynamicEnum.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	width	int		.
+ * @param	height	int		.
+ */
+function KalturaDistributionThumbDimensions(){
+	this.width = null;
+	this.height = null;
+}
+KalturaDistributionThumbDimensions.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		Auto generated unique id
+ *	 (readOnly).
+ * @param	createdAt	int		Profile creation date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	updatedAt	int		Profile last update date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	partnerId	int		 (readOnly).
+ * @param	providerType	string		 (insertOnly).
+ * @param	name	string		.
+ * @param	status	int		.
+ * @param	submitEnabled	int		.
+ * @param	updateEnabled	int		.
+ * @param	deleteEnabled	int		.
+ * @param	reportEnabled	int		.
+ * @param	autoCreateFlavors	string		Comma separated flavor params ids that should be auto converted.
+ * @param	autoCreateThumb	string		Comma separated thumbnail params ids that should be auto generated.
+ * @param	optionalFlavorParamsIds	string		Comma separated flavor params ids that should be submitted if ready.
+ * @param	requiredFlavorParamsIds	string		Comma separated flavor params ids that required to be readt before submission.
+ * @param	optionalThumbDimensions	array		Thumbnail dimensions that should be submitted if ready.
+ * @param	requiredThumbDimensions	array		Thumbnail dimensions that required to be readt before submission.
+ * @param	sunriseDefaultOffset	int		If entry distribution sunrise not specified that will be the default since entry creation time, in seconds.
+ * @param	sunsetDefaultOffset	int		If entry distribution sunset not specified that will be the default since entry creation time, in seconds.
+ */
+function KalturaDistributionProfile(){
+	this.id = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.partnerId = null;
+	this.providerType = null;
+	this.name = null;
+	this.status = null;
+	this.submitEnabled = null;
+	this.updateEnabled = null;
+	this.deleteEnabled = null;
+	this.reportEnabled = null;
+	this.autoCreateFlavors = null;
+	this.autoCreateThumb = null;
+	this.optionalFlavorParamsIds = null;
+	this.requiredFlavorParamsIds = null;
+	this.optionalThumbDimensions = null;
+	this.requiredThumbDimensions = null;
+	this.sunriseDefaultOffset = null;
+	this.sunsetDefaultOffset = null;
+}
+KalturaDistributionProfile.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	username	string		.
+ * @param	notificationEmail	string		.
+ * @param	sftpHost	string		.
+ * @param	sftpLogin	string		.
+ * @param	sftpPublicKey	string		.
+ * @param	sftpPrivateKey	string		.
+ * @param	ownerName	string		.
+ * @param	defaultCategory	string		.
+ * @param	allowComments	string		.
+ * @param	allowEmbedding	string		.
+ * @param	allowRatings	string		.
+ * @param	allowResponses	string		.
+ * @param	commercialPolicy	string		.
+ * @param	ugcPolicy	string		.
+ * @param	target	string		.
+ */
+function KalturaYouTubeDistributionProfile(){
+	this.username = null;
+	this.notificationEmail = null;
+	this.sftpHost = null;
+	this.sftpLogin = null;
+	this.sftpPublicKey = null;
+	this.sftpPrivateKey = null;
+	this.ownerName = null;
+	this.defaultCategory = null;
+	this.allowComments = null;
+	this.allowEmbedding = null;
+	this.allowRatings = null;
+	this.allowResponses = null;
+	this.commercialPolicy = null;
+	this.ugcPolicy = null;
+	this.target = null;
+}
+KalturaYouTubeDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	username	string		.
+ * @param	password	string		.
+ * @param	domain	string		.
+ * @param	metadataProfileId	int		.
+ */
+function KalturaVerizonDistributionProfile(){
+	this.username = null;
+	this.password = null;
+	this.domain = null;
+	this.metadataProfileId = null;
+}
+KalturaVerizonDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	username	string		.
+ * @param	password	string		.
+ * @param	domain	string		.
+ * @param	csId	string		.
+ * @param	source	string		.
+ * @param	metadataProfileId	int		.
+ * @param	movFlavorParamsId	int		.
+ * @param	flvFlavorParamsId	int		.
+ * @param	wmvFlavorParamsId	int		.
+ */
+function KalturaMsnDistributionProfile(){
+	this.username = null;
+	this.password = null;
+	this.domain = null;
+	this.csId = null;
+	this.source = null;
+	this.metadataProfileId = null;
+	this.movFlavorParamsId = null;
+	this.flvFlavorParamsId = null;
+	this.wmvFlavorParamsId = null;
+}
+KalturaMsnDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	username	string		.
+ * @param	password	string		.
+ * @param	metadataProfileId	int		.
+ */
+function KalturaHuluDistributionProfile(){
+	this.username = null;
+	this.password = null;
+	this.metadataProfileId = null;
+}
+KalturaHuluDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	protocol	int		.
+ * @param	serverUrl	string		.
+ * @param	serverPath	string		.
+ * @param	username	string		.
+ * @param	password	string		.
+ * @param	ftpPassiveMode	bool		.
+ * @param	httpFieldName	string		.
+ * @param	httpFileName	string		.
+ */
+function KalturaGenericDistributionProfileAction(){
+	this.protocol = null;
+	this.serverUrl = null;
+	this.serverPath = null;
+	this.username = null;
+	this.password = null;
+	this.ftpPassiveMode = null;
+	this.httpFieldName = null;
+	this.httpFileName = null;
+}
+KalturaGenericDistributionProfileAction.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	genericProviderId	int		 (insertOnly).
+ * @param	submitAction	KalturaGenericDistributionProfileAction		.
+ * @param	updateAction	KalturaGenericDistributionProfileAction		.
+ * @param	deleteAction	KalturaGenericDistributionProfileAction		.
+ * @param	fetchReportAction	KalturaGenericDistributionProfileAction		.
+ * @param	updateRequiredEntryFields	string		.
+ * @param	updateRequiredMetadataXPaths	string		.
+ */
+function KalturaGenericDistributionProfile(){
+	this.genericProviderId = null;
+	this.submitAction = null;
+	this.updateAction = null;
+	this.deleteAction = null;
+	this.fetchReportAction = null;
+	this.updateRequiredEntryFields = null;
+	this.updateRequiredMetadataXPaths = null;
+}
+KalturaGenericDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	email	string		.
+ * @param	password	string		.
+ * @param	account	string		.
+ * @param	metadataProfileId	int		.
+ * @param	keywords	string		.
+ * @param	author	string		.
+ * @param	album	string		.
+ */
+function KalturaComcastDistributionProfile(){
+	this.email = null;
+	this.password = null;
+	this.account = null;
+	this.metadataProfileId = null;
+	this.keywords = null;
+	this.author = null;
+	this.album = null;
+}
+KalturaComcastDistributionProfile.inheritsFrom (KalturaDistributionProfile);
+
+
+/**
+ * @param	type	string		 (readOnly).
+ * @param	name	string		.
+ * @param	scheduleUpdateEnabled	bool		.
+ * @param	deleteInsteadUpdate	bool		.
+ * @param	intervalBeforeSunrise	int		.
+ * @param	intervalBeforeSunset	int		.
+ * @param	updateRequiredEntryFields	string		.
+ * @param	updateRequiredMetadataXPaths	string		.
+ */
+function KalturaDistributionProvider(){
+	this.type = null;
+	this.name = null;
+	this.scheduleUpdateEnabled = null;
+	this.deleteInsteadUpdate = null;
+	this.intervalBeforeSunrise = null;
+	this.intervalBeforeSunset = null;
+	this.updateRequiredEntryFields = null;
+	this.updateRequiredMetadataXPaths = null;
+}
+KalturaDistributionProvider.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ */
+function KalturaYouTubeDistributionProvider(){
+}
+KalturaYouTubeDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
+ */
+function KalturaVerizonDistributionProvider(){
+}
+KalturaVerizonDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
+ */
+function KalturaMsnDistributionProvider(){
+}
+KalturaMsnDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
+ */
+function KalturaHuluDistributionProvider(){
+}
+KalturaHuluDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
+ */
+function KalturaComcastDistributionProvider(){
+}
+KalturaComcastDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
  */
 function KalturaBaseRestriction(){
 }
@@ -117,23 +472,76 @@ KalturaAccessControlListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
- * @param	password	string		 (readOnly).
- * @param	email	string		 (readOnly).
+ * @param	id	string		.
+ * @param	partnerId	int		 (readOnly).
  * @param	screenName	string		.
+ * @param	fullName	string		.
+ * @param	email	string		.
+ * @param	dateOfBirth	int		.
+ * @param	country	string		.
+ * @param	state	string		.
+ * @param	city	string		.
+ * @param	zip	string		.
+ * @param	thumbnailUrl	string		.
+ * @param	description	string		.
+ * @param	tags	string		.
+ * @param	adminTags	string		Admin tags can be updated only by using an admin session.
+ * @param	gender	int		.
+ * @param	status	int		.
+ * @param	createdAt	int		Creation date as Unix timestamp (In seconds) (readOnly).
+ * @param	updatedAt	int		Last update date as Unix timestamp (In seconds) (readOnly).
+ * @param	partnerData	string		Can be used to store various partner related data as a string .
+ * @param	indexedPartnerDataInt	int		.
+ * @param	indexedPartnerDataString	string		.
+ * @param	storageSize	int		 (readOnly).
+ * @param	password	string		 (insertOnly).
+ * @param	firstName	string		.
+ * @param	lastName	string		.
+ * @param	isAdmin	bool		.
+ * @param	lastLoginTime	int		 (readOnly).
+ * @param	statusUpdatedAt	int		 (readOnly).
+ * @param	deletedAt	int		 (readOnly).
+ * @param	loginEnabled	bool		 (readOnly).
+ * @param	roleIds	string		.
+ * @param	roleNames	string		 (readOnly).
+ * @param	isAccountOwner	bool		 (readOnly).
  */
-function KalturaAdminUser(){
-	this.password = null;
-	this.email = null;
+function KalturaUser(){
+	this.id = null;
+	this.partnerId = null;
 	this.screenName = null;
+	this.fullName = null;
+	this.email = null;
+	this.dateOfBirth = null;
+	this.country = null;
+	this.state = null;
+	this.city = null;
+	this.zip = null;
+	this.thumbnailUrl = null;
+	this.description = null;
+	this.tags = null;
+	this.adminTags = null;
+	this.gender = null;
+	this.status = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.partnerData = null;
+	this.indexedPartnerDataInt = null;
+	this.indexedPartnerDataString = null;
+	this.storageSize = null;
+	this.password = null;
+	this.firstName = null;
+	this.lastName = null;
+	this.isAdmin = null;
+	this.lastLoginTime = null;
+	this.statusUpdatedAt = null;
+	this.deletedAt = null;
+	this.loginEnabled = null;
+	this.roleIds = null;
+	this.roleNames = null;
+	this.isAccountOwner = null;
 }
-KalturaAdminUser.inheritsFrom (KalturaObjectBase);
-
-
-/**
- */
-function KalturaDynamicEnum(){
-}
-KalturaDynamicEnum.inheritsFrom (KalturaObjectBase);
+KalturaUser.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -158,7 +566,7 @@ KalturaDynamicEnum.inheritsFrom (KalturaObjectBase);
  * @param	moderationCount	int		Number of moderation requests waiting for this entry
  *	 (readOnly).
  * @param	type	string		The type of the entry, this is auto filled by the derived entry object
- *	 (readOnly).
+ *	.
  * @param	createdAt	int		Entry creation date as Unix timestamp (In seconds)
  *	 (readOnly).
  * @param	updatedAt	int		Entry update date as Unix timestamp (In seconds)
@@ -179,7 +587,7 @@ KalturaDynamicEnum.inheritsFrom (KalturaObjectBase);
  *	.
  * @param	version	int		Version of the entry data (readOnly).
  * @param	thumbnailUrl	string		Thumbnail URL
- *	 (readOnly).
+ *	 (insertOnly).
  * @param	accessControlId	int		The Access Control ID assigned to this entry (null when not set, send -1 to remove)  
  *	.
  * @param	startDate	int		Entry scheduling start date (null when not set, send -1 to remove)
@@ -512,6 +920,7 @@ KalturaBulkUploadResult.inheritsFrom (KalturaObjectBase);
 /**
  * @param	id	int		.
  * @param	uploadedBy	string		.
+ * @param	uploadedByUserId	string		.
  * @param	uploadedOn	int		.
  * @param	numOfEntries	int		.
  * @param	status	int		.
@@ -522,6 +931,7 @@ KalturaBulkUploadResult.inheritsFrom (KalturaObjectBase);
 function KalturaBulkUpload(){
 	this.id = null;
 	this.uploadedBy = null;
+	this.uploadedByUserId = null;
 	this.uploadedOn = null;
 	this.numOfEntries = null;
 	this.status = null;
@@ -862,9 +1272,9 @@ KalturaPlayableEntry.inheritsFrom (KalturaBaseEntry);
  *	 (insertOnly).
  * @param	conversionQuality	string		Override the default conversion quality  
  *	 (insertOnly).
- * @param	sourceType	int		The source type of the entry  (readOnly).
- * @param	searchProviderType	int		The search provider type used to import this entry (readOnly).
- * @param	searchProviderId	string		The ID of the media in the importing site (readOnly).
+ * @param	sourceType	int		The source type of the entry  (insertOnly).
+ * @param	searchProviderType	int		The search provider type used to import this entry (insertOnly).
+ * @param	searchProviderId	string		The ID of the media in the importing site (insertOnly).
  * @param	creditUserName	string		The user name used for credits.
  * @param	creditUrl	string		The URL for credits.
  * @param	mediaDate	int		The media date extracted from EXIF data (For images) as Unix timestamp (In seconds) (readOnly).
@@ -895,10 +1305,39 @@ KalturaMediaEntry.inheritsFrom (KalturaPlayableEntry);
  * @param	partnerId	int		 (readOnly).
  * @param	status	int		The status of the Flavor Asset
  *	 (readOnly).
- * @param	flavorParamsId	int		The Flavor Params used to create this Flavor Asset
- *	 (readOnly).
  * @param	version	int		The version of the Flavor Asset
  *	 (readOnly).
+ * @param	size	int		The size (in KBytes) of the Flavor Asset
+ *	 (readOnly).
+ * @param	tags	string		Tags used to identify the Flavor Asset in various scenarios
+ *	.
+ * @param	fileExt	string		The file extension
+ *	.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ * @param	deletedAt	int		 (readOnly).
+ * @param	description	string		 (readOnly).
+ */
+function KalturaAsset(){
+	this.id = null;
+	this.entryId = null;
+	this.partnerId = null;
+	this.status = null;
+	this.version = null;
+	this.size = null;
+	this.tags = null;
+	this.fileExt = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.deletedAt = null;
+	this.description = null;
+}
+KalturaAsset.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	flavorParamsId	int		The Flavor Params used to create this Flavor Asset
+ *	.
  * @param	width	int		The width of the Flavor Asset 
  *	 (readOnly).
  * @param	height	int		The height of the Flavor Asset
@@ -907,49 +1346,86 @@ KalturaMediaEntry.inheritsFrom (KalturaPlayableEntry);
  *	 (readOnly).
  * @param	frameRate	int		The frame rate (in FPS) of the Flavor Asset
  *	 (readOnly).
- * @param	size	int		The size (in KBytes) of the Flavor Asset
- *	 (readOnly).
  * @param	isOriginal	bool		True if this Flavor Asset is the original source
  *	.
- * @param	tags	string		Tags used to identify the Flavor Asset in various scenarios
- *	.
  * @param	isWeb	bool		True if this Flavor Asset is playable in KDP
- *	.
- * @param	fileExt	string		The file extension
- *	.
+ *	 (readOnly).
  * @param	containerFormat	string		The container format
- *	.
+ *	 (readOnly).
  * @param	videoCodecId	string		The video codec
- *	.
- * @param	createdAt	int		.
- * @param	updatedAt	int		.
- * @param	deletedAt	int		.
- * @param	description	string		.
+ *	 (readOnly).
  */
 function KalturaFlavorAsset(){
-	this.id = null;
-	this.entryId = null;
-	this.partnerId = null;
-	this.status = null;
 	this.flavorParamsId = null;
-	this.version = null;
 	this.width = null;
 	this.height = null;
 	this.bitrate = null;
 	this.frameRate = null;
-	this.size = null;
 	this.isOriginal = null;
-	this.tags = null;
 	this.isWeb = null;
-	this.fileExt = null;
 	this.containerFormat = null;
 	this.videoCodecId = null;
-	this.createdAt = null;
-	this.updatedAt = null;
-	this.deletedAt = null;
-	this.description = null;
 }
-KalturaFlavorAsset.inheritsFrom (KalturaObjectBase);
+KalturaFlavorAsset.inheritsFrom (KalturaAsset);
+
+
+/**
+ * @param	idEqual	string		.
+ * @param	idIn	string		.
+ * @param	entryIdEqual	string		.
+ * @param	entryIdIn	string		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ * @param	statusNotIn	string		.
+ * @param	sizeGreaterThanOrEqual	int		.
+ * @param	sizeLessThanOrEqual	int		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	deletedAtGreaterThanOrEqual	int		.
+ * @param	deletedAtLessThanOrEqual	int		.
+ */
+function KalturaAssetBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.entryIdEqual = null;
+	this.entryIdIn = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+	this.statusNotIn = null;
+	this.sizeGreaterThanOrEqual = null;
+	this.sizeLessThanOrEqual = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.deletedAtGreaterThanOrEqual = null;
+	this.deletedAtLessThanOrEqual = null;
+}
+KalturaAssetBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaAssetFilter(){
+}
+KalturaAssetFilter.inheritsFrom (KalturaAssetBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaFlavorAssetListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaFlavorAssetListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -968,6 +1444,21 @@ KalturaFlavorAsset.inheritsFrom (KalturaObjectBase);
  *	.
  * @param	format	string		The container format of the Flavor Params
  *	.
+ */
+function KalturaAssetParams(){
+	this.id = null;
+	this.partnerId = null;
+	this.name = null;
+	this.description = null;
+	this.createdAt = null;
+	this.isSystemDefault = null;
+	this.tags = null;
+	this.format = null;
+}
+KalturaAssetParams.inheritsFrom (KalturaObjectBase);
+
+
+/**
  * @param	videoCodec	string		The video codec of the Flavor Params
  *	.
  * @param	videoBitrate	int		The video bitrate (in KBits) of the Flavor Params
@@ -999,14 +1490,6 @@ KalturaFlavorAsset.inheritsFrom (KalturaObjectBase);
  * @param	engineVersion	int		.
  */
 function KalturaFlavorParams(){
-	this.id = null;
-	this.partnerId = null;
-	this.name = null;
-	this.description = null;
-	this.createdAt = null;
-	this.isSystemDefault = null;
-	this.tags = null;
-	this.format = null;
 	this.videoCodec = null;
 	this.videoBitrate = null;
 	this.audioCodec = null;
@@ -1025,7 +1508,7 @@ function KalturaFlavorParams(){
 	this.operators = null;
 	this.engineVersion = null;
 }
-KalturaFlavorParams.inheritsFrom (KalturaObjectBase);
+KalturaFlavorParams.inheritsFrom (KalturaAssetParams);
 
 
 /**
@@ -1046,15 +1529,29 @@ KalturaFlavorAssetWithParams.inheritsFrom (KalturaObjectBase);
 
 /**
  * @param	isSystemDefaultEqual	int		.
- * @param	tagsEqual	string		.
  * @param	formatEqual	string		.
+ * @param	tagsEqual	string		.
+ */
+function KalturaAssetParamsBaseFilter(){
+	this.isSystemDefaultEqual = null;
+	this.formatEqual = null;
+	this.tagsEqual = null;
+}
+KalturaAssetParamsBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaAssetParamsFilter(){
+}
+KalturaAssetParamsFilter.inheritsFrom (KalturaAssetParamsBaseFilter);
+
+
+/**
  */
 function KalturaFlavorParamsBaseFilter(){
-	this.isSystemDefaultEqual = null;
-	this.tagsEqual = null;
-	this.formatEqual = null;
 }
-KalturaFlavorParamsBaseFilter.inheritsFrom (KalturaFilter);
+KalturaFlavorParamsBaseFilter.inheritsFrom (KalturaAssetParamsFilter);
 
 
 /**
@@ -1354,6 +1851,8 @@ KalturaClientNotification.inheritsFrom (KalturaObjectBase);
  * @param	adminSecret	string		 (readOnly).
  * @param	cmsPassword	string		 (readOnly).
  * @param	allowMultiNotification	int		 (readOnly).
+ * @param	adminLoginUsersQuota	int		 (readOnly).
+ * @param	adminUserId	string		.
  */
 function KalturaPartner(){
 	this.id = null;
@@ -1385,6 +1884,8 @@ function KalturaPartner(){
 	this.adminSecret = null;
 	this.cmsPassword = null;
 	this.allowMultiNotification = null;
+	this.adminLoginUsersQuota = null;
+	this.adminUserId = null;
 }
 KalturaPartner.inheritsFrom (KalturaObjectBase);
 
@@ -1406,6 +1907,172 @@ function KalturaPartnerUsage(){
 	this.usageGraph = null;
 }
 KalturaPartnerUsage.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		 (readOnly).
+ * @param	type	string		 (readOnly).
+ * @param	partnerId	int		 (readOnly).
+ * @param	tags	string		.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ */
+function KalturaPermissionItem(){
+	this.id = null;
+	this.type = null;
+	this.partnerId = null;
+	this.tags = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+}
+KalturaPermissionItem.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	typeEqual	string		.
+ * @param	typeIn	string		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	tagsMultiLikeOr	string		.
+ * @param	tagsMultiLikeAnd	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ */
+function KalturaPermissionItemBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.typeEqual = null;
+	this.typeIn = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.tagsMultiLikeOr = null;
+	this.tagsMultiLikeAnd = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+}
+KalturaPermissionItemBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaPermissionItemFilter(){
+}
+KalturaPermissionItemFilter.inheritsFrom (KalturaPermissionItemBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaPremissionItemListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaPremissionItemListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		 (readOnly).
+ * @param	type	int		 (readOnly).
+ * @param	name	string		.
+ * @param	friendlyName	string		.
+ * @param	description	string		.
+ * @param	status	int		.
+ * @param	partnerId	int		 (readOnly).
+ * @param	dependsOnPermissionNames	string		.
+ * @param	tags	string		.
+ * @param	permissionItemsIds	string		.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ * @param	partnerGroup	string		.
+ */
+function KalturaPermission(){
+	this.id = null;
+	this.type = null;
+	this.name = null;
+	this.friendlyName = null;
+	this.description = null;
+	this.status = null;
+	this.partnerId = null;
+	this.dependsOnPermissionNames = null;
+	this.tags = null;
+	this.permissionItemsIds = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.partnerGroup = null;
+}
+KalturaPermission.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	typeEqual	int		.
+ * @param	typeIn	string		.
+ * @param	nameEqual	string		.
+ * @param	nameIn	string		.
+ * @param	friendlyNameLike	string		.
+ * @param	descriptionLike	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	dependsOnPermissionNamesMultiLikeOr	string		.
+ * @param	dependsOnPermissionNamesMultiLikeAnd	string		.
+ * @param	tagsMultiLikeOr	string		.
+ * @param	tagsMultiLikeAnd	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ */
+function KalturaPermissionBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.typeEqual = null;
+	this.typeIn = null;
+	this.nameEqual = null;
+	this.nameIn = null;
+	this.friendlyNameLike = null;
+	this.descriptionLike = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.dependsOnPermissionNamesMultiLikeOr = null;
+	this.dependsOnPermissionNamesMultiLikeAnd = null;
+	this.tagsMultiLikeOr = null;
+	this.tagsMultiLikeAnd = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+}
+KalturaPermissionBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaPermissionFilter(){
+}
+KalturaPermissionFilter.inheritsFrom (KalturaPermissionBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaPermissionListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaPermissionListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -1749,6 +2416,91 @@ KalturaSyndicationFeedEntryCount.inheritsFrom (KalturaObjectBase);
 
 
 /**
+ * @param	thumbParamsId	int		The Flavor Params used to create this Flavor Asset
+ *	.
+ * @param	width	int		The width of the Flavor Asset 
+ *	 (readOnly).
+ * @param	height	int		The height of the Flavor Asset
+ *	 (readOnly).
+ */
+function KalturaThumbAsset(){
+	this.thumbParamsId = null;
+	this.width = null;
+	this.height = null;
+}
+KalturaThumbAsset.inheritsFrom (KalturaAsset);
+
+
+/**
+ * @param	cropType	int		.
+ * @param	quality	int		.
+ * @param	cropX	int		.
+ * @param	cropY	int		.
+ * @param	cropWidth	int		.
+ * @param	cropHeight	int		.
+ * @param	videoOffset	int		.
+ * @param	width	int		.
+ * @param	height	int		.
+ * @param	scaleWidth	float		.
+ * @param	scaleHeight	float		.
+ * @param	backgroundColor	string		Hexadecimal value.
+ * @param	sourceParamsId	int		Id of the flavor params or the thumbnail params to be used as source for the thumbnail creation.
+ */
+function KalturaThumbParams(){
+	this.cropType = null;
+	this.quality = null;
+	this.cropX = null;
+	this.cropY = null;
+	this.cropWidth = null;
+	this.cropHeight = null;
+	this.videoOffset = null;
+	this.width = null;
+	this.height = null;
+	this.scaleWidth = null;
+	this.scaleHeight = null;
+	this.backgroundColor = null;
+	this.sourceParamsId = null;
+}
+KalturaThumbParams.inheritsFrom (KalturaAssetParams);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaThumbAssetListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaThumbAssetListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ */
+function KalturaThumbParamsBaseFilter(){
+}
+KalturaThumbParamsBaseFilter.inheritsFrom (KalturaAssetParamsFilter);
+
+
+/**
+ */
+function KalturaThumbParamsFilter(){
+}
+KalturaThumbParamsFilter.inheritsFrom (KalturaThumbParamsBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaThumbParamsListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaThumbParamsListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
  * @param	id	int		 (readOnly).
  * @param	name	string		Name of the uiConf, this is not a primary key.
  * @param	description	string		.
@@ -1799,6 +2551,8 @@ KalturaUiConf.inheritsFrom (KalturaObjectBase);
  * @param	idEqual	int		.
  * @param	idIn	string		.
  * @param	nameLike	string		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
  * @param	objTypeEqual	int		.
  * @param	tagsMultiLikeOr	string		.
  * @param	tagsMultiLikeAnd	string		.
@@ -1813,6 +2567,8 @@ function KalturaUiConfBaseFilter(){
 	this.idEqual = null;
 	this.idIn = null;
 	this.nameLike = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
 	this.objTypeEqual = null;
 	this.tagsMultiLikeOr = null;
 	this.tagsMultiLikeAnd = null;
@@ -1920,61 +2676,86 @@ KalturaUploadTokenListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
- * @param	id	string		.
- * @param	partnerId	int		 (readOnly).
- * @param	screenName	string		.
- * @param	fullName	string		.
- * @param	email	string		.
- * @param	dateOfBirth	int		.
- * @param	country	string		.
- * @param	state	string		.
- * @param	city	string		.
- * @param	zip	string		.
- * @param	thumbnailUrl	string		.
+ * @param	id	int		 (readOnly).
+ * @param	name	string		.
  * @param	description	string		.
- * @param	tags	string		.
- * @param	adminTags	string		Admin tags can be updated only by using an admin session.
- * @param	gender	int		.
  * @param	status	int		.
- * @param	createdAt	int		Creation date as Unix timestamp (In seconds) (readOnly).
- * @param	updatedAt	int		Last update date as Unix timestamp (In seconds) (readOnly).
- * @param	partnerData	string		Can be used to store various partner related data as a string .
- * @param	indexedPartnerDataInt	int		.
- * @param	indexedPartnerDataString	string		.
- * @param	storageSize	int		 (readOnly).
- * @param	password	string		.
+ * @param	partnerId	int		 (readOnly).
+ * @param	permissionNames	string		.
+ * @param	tags	string		.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
  */
-function KalturaUser(){
+function KalturaUserRole(){
 	this.id = null;
-	this.partnerId = null;
-	this.screenName = null;
-	this.fullName = null;
-	this.email = null;
-	this.dateOfBirth = null;
-	this.country = null;
-	this.state = null;
-	this.city = null;
-	this.zip = null;
-	this.thumbnailUrl = null;
+	this.name = null;
 	this.description = null;
-	this.tags = null;
-	this.adminTags = null;
-	this.gender = null;
 	this.status = null;
+	this.partnerId = null;
+	this.permissionNames = null;
+	this.tags = null;
 	this.createdAt = null;
 	this.updatedAt = null;
-	this.partnerData = null;
-	this.indexedPartnerDataInt = null;
-	this.indexedPartnerDataString = null;
-	this.storageSize = null;
-	this.password = null;
 }
-KalturaUser.inheritsFrom (KalturaObjectBase);
+KalturaUserRole.inheritsFrom (KalturaObjectBase);
 
 
 /**
- * @param	idEqual	string		.
+ * @param	idEqual	int		.
  * @param	idIn	string		.
+ * @param	nameEqual	string		.
+ * @param	nameIn	string		.
+ * @param	descriptionLike	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	tagsMultiLikeOr	string		.
+ * @param	tagsMultiLikeAnd	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ */
+function KalturaUserRoleBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.nameEqual = null;
+	this.nameIn = null;
+	this.descriptionLike = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.tagsMultiLikeOr = null;
+	this.tagsMultiLikeAnd = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+}
+KalturaUserRoleBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaUserRoleFilter(){
+}
+KalturaUserRoleFilter.inheritsFrom (KalturaUserRoleBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaUserRoleListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaUserRoleListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
  * @param	partnerIdEqual	int		.
  * @param	screenNameLike	string		.
  * @param	screenNameStartsWith	string		.
@@ -1982,12 +2763,13 @@ KalturaUser.inheritsFrom (KalturaObjectBase);
  * @param	emailStartsWith	string		.
  * @param	tagsMultiLikeOr	string		.
  * @param	tagsMultiLikeAnd	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
  * @param	createdAtGreaterThanOrEqual	int		.
  * @param	createdAtLessThanOrEqual	int		.
+ * @param	isAdminEqual	bool		.
  */
 function KalturaUserBaseFilter(){
-	this.idEqual = null;
-	this.idIn = null;
 	this.partnerIdEqual = null;
 	this.screenNameLike = null;
 	this.screenNameStartsWith = null;
@@ -1995,15 +2777,24 @@ function KalturaUserBaseFilter(){
 	this.emailStartsWith = null;
 	this.tagsMultiLikeOr = null;
 	this.tagsMultiLikeAnd = null;
+	this.statusEqual = null;
+	this.statusIn = null;
 	this.createdAtGreaterThanOrEqual = null;
 	this.createdAtLessThanOrEqual = null;
+	this.isAdminEqual = null;
 }
 KalturaUserBaseFilter.inheritsFrom (KalturaFilter);
 
 
 /**
+ * @param	idEqual	string		.
+ * @param	idIn	string		.
+ * @param	loginEnabledEqual	bool		.
  */
 function KalturaUserFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.loginEnabledEqual = null;
 }
 KalturaUserFilter.inheritsFrom (KalturaUserBaseFilter);
 
@@ -2097,623 +2888,6 @@ function KalturaWidgetListResponse(){
 	this.totalCount = null;
 }
 KalturaWidgetListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	partnerIdEqual	int		.
- * @param	fileObjectTypeEqual	int		.
- * @param	fileObjectTypeIn	string		.
- * @param	objectIdEqual	string		.
- * @param	objectIdIn	string		.
- * @param	versionEqual	string		.
- * @param	versionIn	string		.
- * @param	objectSubTypeEqual	int		.
- * @param	objectSubTypeIn	string		.
- * @param	dcEqual	string		.
- * @param	dcIn	string		.
- * @param	originalEqual	int		.
- * @param	createdAtGreaterThanOrEqual	int		.
- * @param	createdAtLessThanOrEqual	int		.
- * @param	updatedAtGreaterThanOrEqual	int		.
- * @param	updatedAtLessThanOrEqual	int		.
- * @param	readyAtGreaterThanOrEqual	int		.
- * @param	readyAtLessThanOrEqual	int		.
- * @param	syncTimeGreaterThanOrEqual	int		.
- * @param	syncTimeLessThanOrEqual	int		.
- * @param	statusEqual	int		.
- * @param	statusIn	string		.
- * @param	fileTypeEqual	int		.
- * @param	fileTypeIn	string		.
- * @param	linkedIdEqual	int		.
- * @param	linkCountGreaterThanOrEqual	int		.
- * @param	linkCountLessThanOrEqual	int		.
- * @param	fileSizeGreaterThanOrEqual	int		.
- * @param	fileSizeLessThanOrEqual	int		.
- */
-function KalturaFileSyncBaseFilter(){
-	this.partnerIdEqual = null;
-	this.fileObjectTypeEqual = null;
-	this.fileObjectTypeIn = null;
-	this.objectIdEqual = null;
-	this.objectIdIn = null;
-	this.versionEqual = null;
-	this.versionIn = null;
-	this.objectSubTypeEqual = null;
-	this.objectSubTypeIn = null;
-	this.dcEqual = null;
-	this.dcIn = null;
-	this.originalEqual = null;
-	this.createdAtGreaterThanOrEqual = null;
-	this.createdAtLessThanOrEqual = null;
-	this.updatedAtGreaterThanOrEqual = null;
-	this.updatedAtLessThanOrEqual = null;
-	this.readyAtGreaterThanOrEqual = null;
-	this.readyAtLessThanOrEqual = null;
-	this.syncTimeGreaterThanOrEqual = null;
-	this.syncTimeLessThanOrEqual = null;
-	this.statusEqual = null;
-	this.statusIn = null;
-	this.fileTypeEqual = null;
-	this.fileTypeIn = null;
-	this.linkedIdEqual = null;
-	this.linkCountGreaterThanOrEqual = null;
-	this.linkCountLessThanOrEqual = null;
-	this.fileSizeGreaterThanOrEqual = null;
-	this.fileSizeLessThanOrEqual = null;
-}
-KalturaFileSyncBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaFileSyncFilter(){
-}
-KalturaFileSyncFilter.inheritsFrom (KalturaFileSyncBaseFilter);
-
-
-/**
- * @param	id	int		 (readOnly).
- * @param	partnerId	int		 (readOnly).
- * @param	fileObjectType	int		 (readOnly).
- * @param	objectId	string		 (readOnly).
- * @param	version	string		 (readOnly).
- * @param	objectSubType	int		 (readOnly).
- * @param	dc	string		 (readOnly).
- * @param	original	int		 (readOnly).
- * @param	createdAt	int		 (readOnly).
- * @param	updatedAt	int		 (readOnly).
- * @param	readyAt	int		 (readOnly).
- * @param	syncTime	int		 (readOnly).
- * @param	status	int		 (readOnly).
- * @param	fileType	int		 (readOnly).
- * @param	linkedId	int		 (readOnly).
- * @param	linkCount	int		 (readOnly).
- * @param	fileRoot	string		 (readOnly).
- * @param	filePath	string		 (readOnly).
- * @param	fileSize	int		 (readOnly).
- * @param	fileUrl	string		 (readOnly).
- * @param	fileContent	string		 (readOnly).
- * @param	fileDiscSize	int		 (readOnly).
- * @param	isCurrentDc	bool		 (readOnly).
- */
-function KalturaFileSync(){
-	this.id = null;
-	this.partnerId = null;
-	this.fileObjectType = null;
-	this.objectId = null;
-	this.version = null;
-	this.objectSubType = null;
-	this.dc = null;
-	this.original = null;
-	this.createdAt = null;
-	this.updatedAt = null;
-	this.readyAt = null;
-	this.syncTime = null;
-	this.status = null;
-	this.fileType = null;
-	this.linkedId = null;
-	this.linkCount = null;
-	this.fileRoot = null;
-	this.filePath = null;
-	this.fileSize = null;
-	this.fileUrl = null;
-	this.fileContent = null;
-	this.fileDiscSize = null;
-	this.isCurrentDc = null;
-}
-KalturaFileSync.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaFileSyncListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaFileSyncListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	id	int		 (readOnly).
- * @param	email	string		.
- * @param	firstName	string		.
- * @param	lastName	string		.
- * @param	password	string		.
- * @param	createdBy	int		 (readOnly).
- * @param	status	int		.
- * @param	isPrimary	bool		 (readOnly).
- * @param	statusUpdatedAt	int		 (readOnly).
- * @param	createdAt	int		 (readOnly).
- * @param	role	string		.
- */
-function KalturaSystemUser(){
-	this.id = null;
-	this.email = null;
-	this.firstName = null;
-	this.lastName = null;
-	this.password = null;
-	this.createdBy = null;
-	this.status = null;
-	this.isPrimary = null;
-	this.statusUpdatedAt = null;
-	this.createdAt = null;
-	this.role = null;
-}
-KalturaSystemUser.inheritsFrom (KalturaObjectBase);
-
-
-/**
- */
-function KalturaSystemUserBaseFilter(){
-}
-KalturaSystemUserBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaSystemUserFilter(){
-}
-KalturaSystemUserFilter.inheritsFrom (KalturaSystemUserBaseFilter);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaSystemUserListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaSystemUserListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	idEqual	int		.
- * @param	idIn	string		.
- * @param	nameLike	string		.
- * @param	nameMultiLikeOr	string		.
- * @param	nameMultiLikeAnd	string		.
- * @param	nameEqual	string		.
- * @param	statusEqual	int		.
- * @param	statusIn	string		.
- * @param	partnerNameDescriptionWebsiteAdminNameAdminEmailLike	string		.
- */
-function KalturaPartnerBaseFilter(){
-	this.idEqual = null;
-	this.idIn = null;
-	this.nameLike = null;
-	this.nameMultiLikeOr = null;
-	this.nameMultiLikeAnd = null;
-	this.nameEqual = null;
-	this.statusEqual = null;
-	this.statusIn = null;
-	this.partnerNameDescriptionWebsiteAdminNameAdminEmailLike = null;
-}
-KalturaPartnerBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaPartnerFilter(){
-}
-KalturaPartnerFilter.inheritsFrom (KalturaPartnerBaseFilter);
-
-
-/**
- * @param	fromDate	int		Date range from
- *	.
- * @param	toDate	int		Date range to
- *	.
- */
-function KalturaSystemPartnerUsageFilter(){
-	this.fromDate = null;
-	this.toDate = null;
-}
-KalturaSystemPartnerUsageFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- * @param	partnerId	int		Partner ID
- *	.
- * @param	partnerName	string		Partner name
- *	.
- * @param	partnerStatus	int		Partner status
- *	.
- * @param	partnerPackage	int		Partner package
- *	.
- * @param	partnerCreatedAt	int		Partner creation date (Unix timestamp)
- *	.
- * @param	views	int		Number of player loads in the specific date range
- *	.
- * @param	plays	int		Number of plays in the specific date range
- *	.
- * @param	entriesCount	int		Number of new entries created during specific date range
- *	.
- * @param	totalEntriesCount	int		Total number of entries
- *	.
- * @param	videoEntriesCount	int		Number of new video entries created during specific date range
- *	.
- * @param	imageEntriesCount	int		Number of new image entries created during specific date range
- *	.
- * @param	audioEntriesCount	int		Number of new audio entries created during specific date range
- *	.
- * @param	mixEntriesCount	int		Number of new mix entries created during specific date range
- *	.
- * @param	bandwidth	float		The total bandwidth usage during the given date range (in MB)
- *	.
- * @param	totalStorage	float		The total storage consumption (in MB)
- *	.
- * @param	storage	float		The change in storage consumption (new uploads) during the given date range (in MB)
- *	.
- */
-function KalturaSystemPartnerUsageItem(){
-	this.partnerId = null;
-	this.partnerName = null;
-	this.partnerStatus = null;
-	this.partnerPackage = null;
-	this.partnerCreatedAt = null;
-	this.views = null;
-	this.plays = null;
-	this.entriesCount = null;
-	this.totalEntriesCount = null;
-	this.videoEntriesCount = null;
-	this.imageEntriesCount = null;
-	this.audioEntriesCount = null;
-	this.mixEntriesCount = null;
-	this.bandwidth = null;
-	this.totalStorage = null;
-	this.storage = null;
-}
-KalturaSystemPartnerUsageItem.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		.
- * @param	totalCount	int		.
- */
-function KalturaSystemPartnerUsageListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaSystemPartnerUsageListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaPartnerListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaPartnerListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	partnerName	string		.
- * @param	description	string		.
- * @param	adminName	string		.
- * @param	adminEmail	string		.
- * @param	host	string		.
- * @param	cdnHost	string		.
- * @param	maxBulkSize	int		.
- * @param	partnerPackage	int		.
- * @param	monitorUsage	int		.
- * @param	liveStreamEnabled	bool		.
- * @param	moderateContent	bool		.
- * @param	rtmpUrl	string		.
- * @param	storageDeleteFromKaltura	bool		.
- * @param	storageServePriority	int		.
- * @param	kmcVersion	int		.
- * @param	enableAnalyticsTab	bool		.
- * @param	enableSilverLight	bool		.
- * @param	enableVast	bool		.
- * @param	enable508Players	bool		.
- * @param	enableMetadata	bool		.
- * @param	enableAuditTrail	bool		.
- * @param	enableAnnotation	bool		.
- * @param	defThumbOffset	int		.
- */
-function KalturaSystemPartnerConfiguration(){
-	this.partnerName = null;
-	this.description = null;
-	this.adminName = null;
-	this.adminEmail = null;
-	this.host = null;
-	this.cdnHost = null;
-	this.maxBulkSize = null;
-	this.partnerPackage = null;
-	this.monitorUsage = null;
-	this.liveStreamEnabled = null;
-	this.moderateContent = null;
-	this.rtmpUrl = null;
-	this.storageDeleteFromKaltura = null;
-	this.storageServePriority = null;
-	this.kmcVersion = null;
-	this.enableAnalyticsTab = null;
-	this.enableSilverLight = null;
-	this.enableVast = null;
-	this.enable508Players = null;
-	this.enableMetadata = null;
-	this.enableAuditTrail = null;
-	this.enableAnnotation = null;
-	this.defThumbOffset = null;
-}
-KalturaSystemPartnerConfiguration.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	id	int		.
- * @param	name	string		.
- */
-function KalturaSystemPartnerPackage(){
-	this.id = null;
-	this.name = null;
-}
-KalturaSystemPartnerPackage.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	flavorParamsIdEqual	int		.
- * @param	flavorParamsVersionEqual	string		.
- * @param	flavorAssetIdEqual	string		.
- * @param	flavorAssetVersionEqual	string		.
- */
-function KalturaFlavorParamsOutputBaseFilter(){
-	this.flavorParamsIdEqual = null;
-	this.flavorParamsVersionEqual = null;
-	this.flavorAssetIdEqual = null;
-	this.flavorAssetVersionEqual = null;
-}
-KalturaFlavorParamsOutputBaseFilter.inheritsFrom (KalturaFlavorParamsFilter);
-
-
-/**
- */
-function KalturaFlavorParamsOutputFilter(){
-}
-KalturaFlavorParamsOutputFilter.inheritsFrom (KalturaFlavorParamsOutputBaseFilter);
-
-
-/**
- * @param	flavorParamsId	int		.
- * @param	commandLinesStr	string		.
- * @param	flavorParamsVersion	string		.
- * @param	flavorAssetId	string		.
- * @param	flavorAssetVersion	string		.
- * @param	readyBehavior	int		.
- */
-function KalturaFlavorParamsOutput(){
-	this.flavorParamsId = null;
-	this.commandLinesStr = null;
-	this.flavorParamsVersion = null;
-	this.flavorAssetId = null;
-	this.flavorAssetVersion = null;
-	this.readyBehavior = null;
-}
-KalturaFlavorParamsOutput.inheritsFrom (KalturaFlavorParams);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaFlavorParamsOutputListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaFlavorParamsOutputListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	flavorAssetIdEqual	string		.
- */
-function KalturaMediaInfoBaseFilter(){
-	this.flavorAssetIdEqual = null;
-}
-KalturaMediaInfoBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaMediaInfoFilter(){
-}
-KalturaMediaInfoFilter.inheritsFrom (KalturaMediaInfoBaseFilter);
-
-
-/**
- * @param	id	int		The id of the media info
- *	 (readOnly).
- * @param	flavorAssetId	string		The id of the related flavor asset
- *	.
- * @param	fileSize	int		The file size
- *	.
- * @param	containerFormat	string		The container format
- *	.
- * @param	containerId	string		The container id
- *	.
- * @param	containerProfile	string		The container profile
- *	.
- * @param	containerDuration	int		The container duration
- *	.
- * @param	containerBitRate	int		The container bit rate
- *	.
- * @param	videoFormat	string		The video format
- *	.
- * @param	videoCodecId	string		The video codec id
- *	.
- * @param	videoDuration	int		The video duration
- *	.
- * @param	videoBitRate	int		The video bit rate
- *	.
- * @param	videoBitRateMode	int		The video bit rate mode
- *	.
- * @param	videoWidth	int		The video width
- *	.
- * @param	videoHeight	int		The video height
- *	.
- * @param	videoFrameRate	float		The video frame rate
- *	.
- * @param	videoDar	float		The video display aspect ratio (dar)
- *	.
- * @param	videoRotation	int		.
- * @param	audioFormat	string		The audio format
- *	.
- * @param	audioCodecId	string		The audio codec id
- *	.
- * @param	audioDuration	int		The audio duration
- *	.
- * @param	audioBitRate	int		The audio bit rate
- *	.
- * @param	audioBitRateMode	int		The audio bit rate mode
- *	.
- * @param	audioChannels	int		The number of audio channels
- *	.
- * @param	audioSamplingRate	int		The audio sampling rate
- *	.
- * @param	audioResolution	int		The audio resolution
- *	.
- * @param	writingLib	string		The writing library
- *	.
- * @param	rawData	string		The data as returned by the mediainfo command line
- *	.
- * @param	multiStreamInfo	string		.
- * @param	scanType	int		.
- * @param	multiStream	string		.
- */
-function KalturaMediaInfo(){
-	this.id = null;
-	this.flavorAssetId = null;
-	this.fileSize = null;
-	this.containerFormat = null;
-	this.containerId = null;
-	this.containerProfile = null;
-	this.containerDuration = null;
-	this.containerBitRate = null;
-	this.videoFormat = null;
-	this.videoCodecId = null;
-	this.videoDuration = null;
-	this.videoBitRate = null;
-	this.videoBitRateMode = null;
-	this.videoWidth = null;
-	this.videoHeight = null;
-	this.videoFrameRate = null;
-	this.videoDar = null;
-	this.videoRotation = null;
-	this.audioFormat = null;
-	this.audioCodecId = null;
-	this.audioDuration = null;
-	this.audioBitRate = null;
-	this.audioBitRateMode = null;
-	this.audioChannels = null;
-	this.audioSamplingRate = null;
-	this.audioResolution = null;
-	this.writingLib = null;
-	this.rawData = null;
-	this.multiStreamInfo = null;
-	this.scanType = null;
-	this.multiStream = null;
-}
-KalturaMediaInfo.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaMediaInfoListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaMediaInfoListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	id	int		 (readOnly).
- * @param	createdAt	int		 (readOnly).
- * @param	updatedAt	int		 (readOnly).
- * @param	partnerId	int		 (readOnly).
- * @param	name	string		.
- * @param	desciption	string		.
- * @param	status	int		.
- * @param	protocol	int		.
- * @param	storageUrl	string		.
- * @param	storageBaseDir	string		.
- * @param	storageUsername	string		.
- * @param	storagePassword	string		.
- * @param	storageFtpPassiveMode	bool		.
- * @param	deliveryHttpBaseUrl	string		.
- * @param	deliveryRmpBaseUrl	string		.
- * @param	deliveryIisBaseUrl	string		.
- * @param	minFileSize	int		.
- * @param	maxFileSize	int		.
- * @param	flavorParamsIds	string		.
- * @param	maxConcurrentConnections	int		.
- * @param	pathManagerClass	string		.
- * @param	urlManagerClass	string		.
- * @param	trigger	int		TODO - remove after events manager is implemented
- *	No need to create enum for temp field
- *	.
- */
-function KalturaStorageProfile(){
-	this.id = null;
-	this.createdAt = null;
-	this.updatedAt = null;
-	this.partnerId = null;
-	this.name = null;
-	this.desciption = null;
-	this.status = null;
-	this.protocol = null;
-	this.storageUrl = null;
-	this.storageBaseDir = null;
-	this.storageUsername = null;
-	this.storagePassword = null;
-	this.storageFtpPassiveMode = null;
-	this.deliveryHttpBaseUrl = null;
-	this.deliveryRmpBaseUrl = null;
-	this.deliveryIisBaseUrl = null;
-	this.minFileSize = null;
-	this.maxFileSize = null;
-	this.flavorParamsIds = null;
-	this.maxConcurrentConnections = null;
-	this.pathManagerClass = null;
-	this.urlManagerClass = null;
-	this.trigger = null;
-}
-KalturaStorageProfile.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaStorageProfileListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaStorageProfileListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -2905,309 +3079,565 @@ KalturaMetadataProfileFieldListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
- * @param	schedulerId	int		.
- * @param	workerId	int		.
- * @param	batchIndex	int		.
- */
-function KalturaExclusiveLockKey(){
-	this.schedulerId = null;
-	this.workerId = null;
-	this.batchIndex = null;
-}
-KalturaExclusiveLockKey.inheritsFrom (KalturaObjectBase);
-
-
-/**
  * @param	idEqual	int		.
- * @param	idGreaterThanOrEqual	int		.
- * @param	partnerIdEqual	int		.
- * @param	partnerIdIn	string		.
- * @param	createdAtGreaterThanOrEqual	int		.
- * @param	createdAtLessThanOrEqual	int		.
- */
-function KalturaBaseJobBaseFilter(){
-	this.idEqual = null;
-	this.idGreaterThanOrEqual = null;
-	this.partnerIdEqual = null;
-	this.partnerIdIn = null;
-	this.createdAtGreaterThanOrEqual = null;
-	this.createdAtLessThanOrEqual = null;
-}
-KalturaBaseJobBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaBaseJobFilter(){
-}
-KalturaBaseJobFilter.inheritsFrom (KalturaBaseJobBaseFilter);
-
-
-/**
- * @param	entryIdEqual	string		.
- * @param	jobTypeEqual	string		.
- * @param	jobTypeIn	string		.
- * @param	jobTypeNotIn	string		.
- * @param	jobSubTypeEqual	int		.
- * @param	jobSubTypeIn	string		.
- * @param	onStressDivertToIn	string		.
+ * @param	idIn	string		.
+ * @param	nameLike	string		.
+ * @param	nameMultiLikeOr	string		.
+ * @param	nameMultiLikeAnd	string		.
+ * @param	nameEqual	string		.
  * @param	statusEqual	int		.
  * @param	statusIn	string		.
- * @param	priorityGreaterThanOrEqual	int		.
- * @param	priorityLessThanOrEqual	int		.
- * @param	queueTimeGreaterThanOrEqual	int		.
- * @param	queueTimeLessThanOrEqual	int		.
- * @param	finishTimeGreaterThanOrEqual	int		.
- * @param	finishTimeLessThanOrEqual	int		.
- * @param	errTypeIn	string		.
- * @param	fileSizeLessThan	int		.
- * @param	fileSizeGreaterThan	int		.
+ * @param	partnerNameDescriptionWebsiteAdminNameAdminEmailLike	string		.
  */
-function KalturaBatchJobBaseFilter(){
-	this.entryIdEqual = null;
-	this.jobTypeEqual = null;
-	this.jobTypeIn = null;
-	this.jobTypeNotIn = null;
-	this.jobSubTypeEqual = null;
-	this.jobSubTypeIn = null;
-	this.onStressDivertToIn = null;
+function KalturaPartnerBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.nameLike = null;
+	this.nameMultiLikeOr = null;
+	this.nameMultiLikeAnd = null;
+	this.nameEqual = null;
 	this.statusEqual = null;
 	this.statusIn = null;
-	this.priorityGreaterThanOrEqual = null;
-	this.priorityLessThanOrEqual = null;
-	this.queueTimeGreaterThanOrEqual = null;
-	this.queueTimeLessThanOrEqual = null;
-	this.finishTimeGreaterThanOrEqual = null;
-	this.finishTimeLessThanOrEqual = null;
-	this.errTypeIn = null;
-	this.fileSizeLessThan = null;
-	this.fileSizeGreaterThan = null;
+	this.partnerNameDescriptionWebsiteAdminNameAdminEmailLike = null;
 }
-KalturaBatchJobBaseFilter.inheritsFrom (KalturaBaseJobFilter);
+KalturaPartnerBaseFilter.inheritsFrom (KalturaFilter);
 
 
 /**
  */
-function KalturaBatchJobFilter(){
+function KalturaPartnerFilter(){
 }
-KalturaBatchJobFilter.inheritsFrom (KalturaBatchJobBaseFilter);
+KalturaPartnerFilter.inheritsFrom (KalturaPartnerBaseFilter);
 
 
 /**
  * @param	id	int		 (readOnly).
- * @param	partnerId	int		 (readOnly).
  * @param	createdAt	int		 (readOnly).
  * @param	updatedAt	int		 (readOnly).
- * @param	deletedAt	int		 (readOnly).
- * @param	processorExpiration	int		 (readOnly).
- * @param	executionAttempts	int		 (readOnly).
- * @param	lockVersion	int		 (readOnly).
+ * @param	partnerId	int		 (readOnly).
+ * @param	name	string		.
+ * @param	desciption	string		.
+ * @param	status	int		.
+ * @param	protocol	int		.
+ * @param	storageUrl	string		.
+ * @param	storageBaseDir	string		.
+ * @param	storageUsername	string		.
+ * @param	storagePassword	string		.
+ * @param	storageFtpPassiveMode	bool		.
+ * @param	deliveryHttpBaseUrl	string		.
+ * @param	deliveryRmpBaseUrl	string		.
+ * @param	deliveryIisBaseUrl	string		.
+ * @param	minFileSize	int		.
+ * @param	maxFileSize	int		.
+ * @param	flavorParamsIds	string		.
+ * @param	maxConcurrentConnections	int		.
+ * @param	pathManagerClass	string		.
+ * @param	urlManagerClass	string		.
+ * @param	trigger	int		TODO - remove after events manager is implemented
+ *	No need to create enum for temp field
+ *	.
  */
-function KalturaBaseJob(){
+function KalturaStorageProfile(){
 	this.id = null;
-	this.partnerId = null;
 	this.createdAt = null;
 	this.updatedAt = null;
-	this.deletedAt = null;
-	this.processorExpiration = null;
-	this.executionAttempts = null;
-	this.lockVersion = null;
-}
-KalturaBaseJob.inheritsFrom (KalturaObjectBase);
-
-
-/**
- */
-function KalturaJobData(){
-}
-KalturaJobData.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	entryId	string		.
- * @param	entryName	string		.
- * @param	jobType	string		 (readOnly).
- * @param	jobSubType	int		.
- * @param	onStressDivertTo	int		.
- * @param	data	KalturaJobData		.
- * @param	status	int		.
- * @param	abort	int		.
- * @param	checkAgainTimeout	int		.
- * @param	progress	int		.
- * @param	message	string		.
- * @param	description	string		.
- * @param	updatesCount	int		.
- * @param	priority	int		.
- * @param	twinJobId	int		The id of identical job.
- * @param	bulkJobId	int		The id of the bulk upload job that initiated this job.
- * @param	parentJobId	int		When one job creates another - the parent should set this parentJobId to be its own id..
- * @param	rootJobId	int		The id of the root parent job.
- * @param	queueTime	int		The time that the job was pulled from the queue.
- * @param	finishTime	int		The time that the job was finished or closed as failed.
- * @param	errType	int		.
- * @param	errNumber	int		.
- * @param	fileSize	int		.
- * @param	lastWorkerRemote	bool		.
- * @param	schedulerId	int		.
- * @param	workerId	int		.
- * @param	batchIndex	int		.
- * @param	lastSchedulerId	int		.
- * @param	lastWorkerId	int		.
- * @param	dc	int		.
- */
-function KalturaBatchJob(){
-	this.entryId = null;
-	this.entryName = null;
-	this.jobType = null;
-	this.jobSubType = null;
-	this.onStressDivertTo = null;
-	this.data = null;
+	this.partnerId = null;
+	this.name = null;
+	this.desciption = null;
 	this.status = null;
-	this.abort = null;
-	this.checkAgainTimeout = null;
-	this.progress = null;
-	this.message = null;
-	this.description = null;
-	this.updatesCount = null;
-	this.priority = null;
-	this.twinJobId = null;
-	this.bulkJobId = null;
-	this.parentJobId = null;
-	this.rootJobId = null;
-	this.queueTime = null;
-	this.finishTime = null;
-	this.errType = null;
-	this.errNumber = null;
-	this.fileSize = null;
-	this.lastWorkerRemote = null;
-	this.schedulerId = null;
-	this.workerId = null;
-	this.batchIndex = null;
-	this.lastSchedulerId = null;
-	this.lastWorkerId = null;
-	this.dc = null;
+	this.protocol = null;
+	this.storageUrl = null;
+	this.storageBaseDir = null;
+	this.storageUsername = null;
+	this.storagePassword = null;
+	this.storageFtpPassiveMode = null;
+	this.deliveryHttpBaseUrl = null;
+	this.deliveryRmpBaseUrl = null;
+	this.deliveryIisBaseUrl = null;
+	this.minFileSize = null;
+	this.maxFileSize = null;
+	this.flavorParamsIds = null;
+	this.maxConcurrentConnections = null;
+	this.pathManagerClass = null;
+	this.urlManagerClass = null;
+	this.trigger = null;
 }
-KalturaBatchJob.inheritsFrom (KalturaBaseJob);
-
-
-/**
- * @param	job	KalturaBatchJob		 (readOnly).
- * @param	jobType	int		 (readOnly).
- * @param	queueSize	int		 (readOnly).
- */
-function KalturaFreeJobResponse(){
-	this.job = null;
-	this.jobType = null;
-	this.queueSize = null;
-}
-KalturaFreeJobResponse.inheritsFrom (KalturaObjectBase);
+KalturaStorageProfile.inheritsFrom (KalturaObjectBase);
 
 
 /**
  * @param	objects	array		 (readOnly).
  * @param	totalCount	int		 (readOnly).
- * @param	lowerVersionCount	int		 (readOnly).
  */
-function KalturaTransformMetadataResponse(){
+function KalturaStorageProfileListResponse(){
 	this.objects = null;
 	this.totalCount = null;
-	this.lowerVersionCount = null;
 }
-KalturaTransformMetadataResponse.inheritsFrom (KalturaObjectBase);
+KalturaStorageProfileListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
- * @param	totalCount	int		 (readOnly).
- * @param	lowerVersionCount	int		 (readOnly).
+ * @param	fromDate	int		Date range from
+ *	.
+ * @param	toDate	int		Date range to
+ *	.
  */
-function KalturaUpgradeMetadataResponse(){
+function KalturaSystemPartnerUsageFilter(){
+	this.fromDate = null;
+	this.toDate = null;
+}
+KalturaSystemPartnerUsageFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ * @param	partnerId	int		Partner ID
+ *	.
+ * @param	partnerName	string		Partner name
+ *	.
+ * @param	partnerStatus	int		Partner status
+ *	.
+ * @param	partnerPackage	int		Partner package
+ *	.
+ * @param	partnerCreatedAt	int		Partner creation date (Unix timestamp)
+ *	.
+ * @param	views	int		Number of player loads in the specific date range
+ *	.
+ * @param	plays	int		Number of plays in the specific date range
+ *	.
+ * @param	entriesCount	int		Number of new entries created during specific date range
+ *	.
+ * @param	totalEntriesCount	int		Total number of entries
+ *	.
+ * @param	videoEntriesCount	int		Number of new video entries created during specific date range
+ *	.
+ * @param	imageEntriesCount	int		Number of new image entries created during specific date range
+ *	.
+ * @param	audioEntriesCount	int		Number of new audio entries created during specific date range
+ *	.
+ * @param	mixEntriesCount	int		Number of new mix entries created during specific date range
+ *	.
+ * @param	bandwidth	float		The total bandwidth usage during the given date range (in MB)
+ *	.
+ * @param	totalStorage	float		The total storage consumption (in MB)
+ *	.
+ * @param	storage	float		The change in storage consumption (new uploads) during the given date range (in MB)
+ *	.
+ */
+function KalturaSystemPartnerUsageItem(){
+	this.partnerId = null;
+	this.partnerName = null;
+	this.partnerStatus = null;
+	this.partnerPackage = null;
+	this.partnerCreatedAt = null;
+	this.views = null;
+	this.plays = null;
+	this.entriesCount = null;
+	this.totalEntriesCount = null;
+	this.videoEntriesCount = null;
+	this.imageEntriesCount = null;
+	this.audioEntriesCount = null;
+	this.mixEntriesCount = null;
+	this.bandwidth = null;
+	this.totalStorage = null;
+	this.storage = null;
+}
+KalturaSystemPartnerUsageItem.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		.
+ * @param	totalCount	int		.
+ */
+function KalturaSystemPartnerUsageListResponse(){
+	this.objects = null;
 	this.totalCount = null;
-	this.lowerVersionCount = null;
 }
-KalturaUpgradeMetadataResponse.inheritsFrom (KalturaObjectBase);
+KalturaSystemPartnerUsageListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaPartnerListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaPartnerListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	partnerName	string		.
+ * @param	description	string		.
+ * @param	adminName	string		.
+ * @param	adminEmail	string		.
+ * @param	host	string		.
+ * @param	cdnHost	string		.
+ * @param	maxBulkSize	int		.
+ * @param	partnerPackage	int		.
+ * @param	monitorUsage	int		.
+ * @param	liveStreamEnabled	bool		.
+ * @param	moderateContent	bool		.
+ * @param	rtmpUrl	string		.
+ * @param	storageDeleteFromKaltura	bool		.
+ * @param	storageServePriority	int		.
+ * @param	kmcVersion	int		.
+ * @param	enableAnalyticsTab	bool		.
+ * @param	enableSilverLight	bool		.
+ * @param	enableVast	bool		.
+ * @param	enable508Players	bool		.
+ * @param	enableMetadata	bool		.
+ * @param	enableContentDistribution	bool		.
+ * @param	enableAuditTrail	bool		.
+ * @param	enableAnnotation	bool		.
+ * @param	enablePs2PermissionValidation	bool		.
+ * @param	defThumbOffset	int		.
+ * @param	adminLoginUsersQuota	int		.
+ * @param	userSessionRoleId	int		.
+ * @param	adminSessionRoleId	int		.
+ * @param	alwaysAllowedPermissionNames	string		.
+ */
+function KalturaSystemPartnerConfiguration(){
+	this.partnerName = null;
+	this.description = null;
+	this.adminName = null;
+	this.adminEmail = null;
+	this.host = null;
+	this.cdnHost = null;
+	this.maxBulkSize = null;
+	this.partnerPackage = null;
+	this.monitorUsage = null;
+	this.liveStreamEnabled = null;
+	this.moderateContent = null;
+	this.rtmpUrl = null;
+	this.storageDeleteFromKaltura = null;
+	this.storageServePriority = null;
+	this.kmcVersion = null;
+	this.enableAnalyticsTab = null;
+	this.enableSilverLight = null;
+	this.enableVast = null;
+	this.enable508Players = null;
+	this.enableMetadata = null;
+	this.enableContentDistribution = null;
+	this.enableAuditTrail = null;
+	this.enableAnnotation = null;
+	this.enablePs2PermissionValidation = null;
+	this.defThumbOffset = null;
+	this.adminLoginUsersQuota = null;
+	this.userSessionRoleId = null;
+	this.adminSessionRoleId = null;
+	this.alwaysAllowedPermissionNames = null;
+}
+KalturaSystemPartnerConfiguration.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		.
+ * @param	name	string		.
+ */
+function KalturaSystemPartnerPackage(){
+	this.id = null;
+	this.name = null;
+}
+KalturaSystemPartnerPackage.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	flavorParamsIdEqual	int		.
+ * @param	flavorParamsVersionEqual	string		.
+ * @param	flavorAssetIdEqual	string		.
+ * @param	flavorAssetVersionEqual	string		.
+ */
+function KalturaFlavorParamsOutputBaseFilter(){
+	this.flavorParamsIdEqual = null;
+	this.flavorParamsVersionEqual = null;
+	this.flavorAssetIdEqual = null;
+	this.flavorAssetVersionEqual = null;
+}
+KalturaFlavorParamsOutputBaseFilter.inheritsFrom (KalturaFlavorParamsFilter);
+
+
+/**
+ */
+function KalturaFlavorParamsOutputFilter(){
+}
+KalturaFlavorParamsOutputFilter.inheritsFrom (KalturaFlavorParamsOutputBaseFilter);
+
+
+/**
+ * @param	flavorParamsId	int		.
+ * @param	commandLinesStr	string		.
+ * @param	flavorParamsVersion	string		.
  * @param	flavorAssetId	string		.
- * @param	flavorParamsOutputId	int		.
+ * @param	flavorAssetVersion	string		.
  * @param	readyBehavior	int		.
- * @param	videoBitrate	int		.
- * @param	audioBitrate	int		.
- * @param	destFileSyncLocalPath	string		.
- * @param	destFileSyncRemoteUrl	string		.
  */
-function KalturaConvertCollectionFlavorData(){
+function KalturaFlavorParamsOutput(){
+	this.flavorParamsId = null;
+	this.commandLinesStr = null;
+	this.flavorParamsVersion = null;
 	this.flavorAssetId = null;
-	this.flavorParamsOutputId = null;
+	this.flavorAssetVersion = null;
 	this.readyBehavior = null;
-	this.videoBitrate = null;
-	this.audioBitrate = null;
-	this.destFileSyncLocalPath = null;
-	this.destFileSyncRemoteUrl = null;
 }
-KalturaConvertCollectionFlavorData.inheritsFrom (KalturaObjectBase);
+KalturaFlavorParamsOutput.inheritsFrom (KalturaFlavorParams);
 
 
 /**
- * @param	puserId	string		.
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaFlavorParamsOutputListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaFlavorParamsOutputListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	thumbParamsIdEqual	int		.
+ * @param	thumbParamsVersionEqual	string		.
+ * @param	thumbAssetIdEqual	string		.
+ * @param	thumbAssetVersionEqual	string		.
+ */
+function KalturaThumbParamsOutputBaseFilter(){
+	this.thumbParamsIdEqual = null;
+	this.thumbParamsVersionEqual = null;
+	this.thumbAssetIdEqual = null;
+	this.thumbAssetVersionEqual = null;
+}
+KalturaThumbParamsOutputBaseFilter.inheritsFrom (KalturaThumbParamsFilter);
+
+
+/**
+ */
+function KalturaThumbParamsOutputFilter(){
+}
+KalturaThumbParamsOutputFilter.inheritsFrom (KalturaThumbParamsOutputBaseFilter);
+
+
+/**
+ * @param	thumbParamsId	int		.
+ * @param	thumbParamsVersion	string		.
+ * @param	thumbAssetId	string		.
+ * @param	thumbAssetVersion	string		.
+ */
+function KalturaThumbParamsOutput(){
+	this.thumbParamsId = null;
+	this.thumbParamsVersion = null;
+	this.thumbAssetId = null;
+	this.thumbAssetVersion = null;
+}
+KalturaThumbParamsOutput.inheritsFrom (KalturaThumbParams);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaThumbParamsOutputListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaThumbParamsOutputListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	flavorAssetIdEqual	string		.
+ */
+function KalturaMediaInfoBaseFilter(){
+	this.flavorAssetIdEqual = null;
+}
+KalturaMediaInfoBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaMediaInfoFilter(){
+}
+KalturaMediaInfoFilter.inheritsFrom (KalturaMediaInfoBaseFilter);
+
+
+/**
+ * @param	id	int		The id of the media info
+ *	 (readOnly).
+ * @param	flavorAssetId	string		The id of the related flavor asset
+ *	.
+ * @param	fileSize	int		The file size
+ *	.
+ * @param	containerFormat	string		The container format
+ *	.
+ * @param	containerId	string		The container id
+ *	.
+ * @param	containerProfile	string		The container profile
+ *	.
+ * @param	containerDuration	int		The container duration
+ *	.
+ * @param	containerBitRate	int		The container bit rate
+ *	.
+ * @param	videoFormat	string		The video format
+ *	.
+ * @param	videoCodecId	string		The video codec id
+ *	.
+ * @param	videoDuration	int		The video duration
+ *	.
+ * @param	videoBitRate	int		The video bit rate
+ *	.
+ * @param	videoBitRateMode	int		The video bit rate mode
+ *	.
+ * @param	videoWidth	int		The video width
+ *	.
+ * @param	videoHeight	int		The video height
+ *	.
+ * @param	videoFrameRate	float		The video frame rate
+ *	.
+ * @param	videoDar	float		The video display aspect ratio (dar)
+ *	.
+ * @param	videoRotation	int		.
+ * @param	audioFormat	string		The audio format
+ *	.
+ * @param	audioCodecId	string		The audio codec id
+ *	.
+ * @param	audioDuration	int		The audio duration
+ *	.
+ * @param	audioBitRate	int		The audio bit rate
+ *	.
+ * @param	audioBitRateMode	int		The audio bit rate mode
+ *	.
+ * @param	audioChannels	int		The number of audio channels
+ *	.
+ * @param	audioSamplingRate	int		The audio sampling rate
+ *	.
+ * @param	audioResolution	int		The audio resolution
+ *	.
+ * @param	writingLib	string		The writing library
+ *	.
+ * @param	rawData	string		The data as returned by the mediainfo command line
+ *	.
+ * @param	multiStreamInfo	string		.
+ * @param	scanType	int		.
+ * @param	multiStream	string		.
+ */
+function KalturaMediaInfo(){
+	this.id = null;
+	this.flavorAssetId = null;
+	this.fileSize = null;
+	this.containerFormat = null;
+	this.containerId = null;
+	this.containerProfile = null;
+	this.containerDuration = null;
+	this.containerBitRate = null;
+	this.videoFormat = null;
+	this.videoCodecId = null;
+	this.videoDuration = null;
+	this.videoBitRate = null;
+	this.videoBitRateMode = null;
+	this.videoWidth = null;
+	this.videoHeight = null;
+	this.videoFrameRate = null;
+	this.videoDar = null;
+	this.videoRotation = null;
+	this.audioFormat = null;
+	this.audioCodecId = null;
+	this.audioDuration = null;
+	this.audioBitRate = null;
+	this.audioBitRateMode = null;
+	this.audioChannels = null;
+	this.audioSamplingRate = null;
+	this.audioResolution = null;
+	this.writingLib = null;
+	this.rawData = null;
+	this.multiStreamInfo = null;
+	this.scanType = null;
+	this.multiStream = null;
+}
+KalturaMediaInfo.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaMediaInfoListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaMediaInfoListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		.
+ * @param	trackEventType	int		.
+ * @param	psVersion	string		.
+ * @param	context	string		.
+ * @param	partnerId	int		.
+ * @param	entryId	string		.
+ * @param	hostName	string		.
+ * @param	userId	string		.
+ * @param	changedProperties	string		.
+ * @param	paramStr1	string		.
+ * @param	paramStr2	string		.
+ * @param	paramStr3	string		.
+ * @param	ks	string		.
+ * @param	description	string		.
+ * @param	createdAt	int		.
+ * @param	updatedAt	int		.
+ * @param	userIp	string		.
+ */
+function KalturaTrackEntry(){
+	this.id = null;
+	this.trackEventType = null;
+	this.psVersion = null;
+	this.context = null;
+	this.partnerId = null;
+	this.entryId = null;
+	this.hostName = null;
+	this.userId = null;
+	this.changedProperties = null;
+	this.paramStr1 = null;
+	this.paramStr2 = null;
+	this.paramStr3 = null;
+	this.ks = null;
+	this.description = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.userIp = null;
+}
+KalturaTrackEntry.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaTrackEntryListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaTrackEntryListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	partner_id	int		.
+ * @param	valid_until	int		.
+ * @param	partner_pattern	string		.
  * @param	type	int		.
- * @param	objectId	string		.
- * @param	status	int		.
- * @param	notificationData	string		.
- * @param	numberOfAttempts	int		.
- * @param	notificationResult	string		.
- * @param	objType	int		.
+ * @param	error	string		.
+ * @param	rand	int		.
+ * @param	user	string		.
+ * @param	privileges	string		.
  */
-function KalturaNotification(){
-	this.puserId = null;
+function KalturaInternalToolsSession(){
+	this.partner_id = null;
+	this.valid_until = null;
+	this.partner_pattern = null;
 	this.type = null;
-	this.objectId = null;
-	this.status = null;
-	this.notificationData = null;
-	this.numberOfAttempts = null;
-	this.notificationResult = null;
-	this.objType = null;
+	this.error = null;
+	this.rand = null;
+	this.user = null;
+	this.privileges = null;
 }
-KalturaNotification.inheritsFrom (KalturaBaseJob);
-
-
-/**
- * @param	notifications	array		 (readOnly).
- * @param	partners	array		 (readOnly).
- */
-function KalturaBatchGetExclusiveNotificationJobsResponse(){
-	this.notifications = null;
-	this.partners = null;
-}
-KalturaBatchGetExclusiveNotificationJobsResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	schedulerId	int		.
- * @param	workerId	int		.
- * @param	jobType	int		.
- * @param	filter	KalturaBatchJobFilter		.
- */
-function KalturaWorkerQueueFilter(){
-	this.schedulerId = null;
-	this.workerId = null;
-	this.jobType = null;
-	this.filter = null;
-}
-KalturaWorkerQueueFilter.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	exists	bool		Indicates if the file exists
- *	.
- * @param	sizeOk	bool		Indicates if the file size is right
- *	.
- */
-function KalturaFileExistsResponse(){
-	this.exists = null;
-	this.sizeOk = null;
-}
-KalturaFileExistsResponse.inheritsFrom (KalturaObjectBase);
+KalturaInternalToolsSession.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -3299,13 +3729,6 @@ KalturaAuditTrailFilter.inheritsFrom (KalturaAuditTrailBaseFilter);
 
 
 /**
- */
-function KalturaAuditTrailInfo(){
-}
-KalturaAuditTrailInfo.inheritsFrom (KalturaObjectBase);
-
-
-/**
  * @param	id	int		 (readOnly).
  * @param	createdAt	int		 (readOnly).
  * @param	parsedAt	int		Indicates when the data was parsed (readOnly).
@@ -3369,80 +3792,6 @@ function KalturaAuditTrailListResponse(){
 	this.totalCount = null;
 }
 KalturaAuditTrailListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	idEqual	string		.
- * @param	entryIdEqual	string		.
- * @param	parentIdEqual	string		.
- * @param	parentIdIn	string		.
- * @param	createdAtGreaterThanOrEqual	int		.
- * @param	createdAtLessThanOrEqual	int		.
- * @param	updatedAtGreaterThanOrEqual	int		.
- * @param	updatedAtLessThanOrEqual	int		.
- * @param	userIdEqual	string		.
- * @param	userIdIn	string		.
- */
-function KalturaAnnotationBaseFilter(){
-	this.idEqual = null;
-	this.entryIdEqual = null;
-	this.parentIdEqual = null;
-	this.parentIdIn = null;
-	this.createdAtGreaterThanOrEqual = null;
-	this.createdAtLessThanOrEqual = null;
-	this.updatedAtGreaterThanOrEqual = null;
-	this.updatedAtLessThanOrEqual = null;
-	this.userIdEqual = null;
-	this.userIdIn = null;
-}
-KalturaAnnotationBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaAnnotationFilter(){
-}
-KalturaAnnotationFilter.inheritsFrom (KalturaAnnotationBaseFilter);
-
-
-/**
- * @param	id	string		 (readOnly).
- * @param	entryId	string		.
- * @param	parentId	string		.
- * @param	createdAt	int		 (readOnly).
- * @param	updatedAt	int		 (readOnly).
- * @param	text	string		.
- * @param	tags	string		.
- * @param	startTime	int		.
- * @param	endTime	int		.
- * @param	userId	string		 (readOnly).
- * @param	partnerData	string		.
- */
-function KalturaAnnotation(){
-	this.id = null;
-	this.entryId = null;
-	this.parentId = null;
-	this.createdAt = null;
-	this.updatedAt = null;
-	this.text = null;
-	this.tags = null;
-	this.startTime = null;
-	this.endTime = null;
-	this.userId = null;
-	this.partnerData = null;
-}
-KalturaAnnotation.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaAnnotationListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaAnnotationListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -3520,6 +3869,547 @@ KalturaVirusScanProfileListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ */
+function KalturaDistributionProfileBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+}
+KalturaDistributionProfileBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaDistributionProfileFilter(){
+}
+KalturaDistributionProfileFilter.inheritsFrom (KalturaDistributionProfileBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaDistributionProfileListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaDistributionProfileListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	action	int		.
+ * @param	errorType	int		.
+ * @param	description	string		.
+ */
+function KalturaDistributionValidationError(){
+	this.action = null;
+	this.errorType = null;
+	this.description = null;
+}
+KalturaDistributionValidationError.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		Auto generated unique id
+ *	 (readOnly).
+ * @param	createdAt	int		Entry distribution creation date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	updatedAt	int		Entry distribution last update date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	submittedAt	int		Entry distribution submission date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	entryId	string		 (insertOnly).
+ * @param	partnerId	int		 (readOnly).
+ * @param	distributionProfileId	int		 (insertOnly).
+ * @param	status	int		 (readOnly).
+ * @param	dirtyStatus	int		 (readOnly).
+ * @param	thumbAssetIds	string		Comma separated thumbnail asset ids.
+ * @param	flavorAssetIds	string		Comma separated flavor asset ids.
+ * @param	sunrise	int		Entry distribution publish time as Unix timestamp (In seconds)
+ *	.
+ * @param	sunset	int		Entry distribution un-publish time as Unix timestamp (In seconds)
+ *	.
+ * @param	remoteId	string		The id as returned from the distributed destination (readOnly).
+ * @param	plays	int		The plays as retrieved from the remote destination reports (readOnly).
+ * @param	views	int		The views as retrieved from the remote destination reports (readOnly).
+ * @param	validationErrors	array		 (readOnly).
+ * @param	errorType	int		 (readOnly).
+ * @param	errorNumber	int		 (readOnly).
+ * @param	errorDescription	string		 (readOnly).
+ * @param	hasSubmitResultsLog	int		 (readOnly).
+ * @param	hasSubmitSentDataLog	int		 (readOnly).
+ * @param	hasUpdateResultsLog	int		 (readOnly).
+ * @param	hasUpdateSentDataLog	int		 (readOnly).
+ * @param	hasDeleteResultsLog	int		 (readOnly).
+ * @param	hasDeleteSentDataLog	int		 (readOnly).
+ */
+function KalturaEntryDistribution(){
+	this.id = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.submittedAt = null;
+	this.entryId = null;
+	this.partnerId = null;
+	this.distributionProfileId = null;
+	this.status = null;
+	this.dirtyStatus = null;
+	this.thumbAssetIds = null;
+	this.flavorAssetIds = null;
+	this.sunrise = null;
+	this.sunset = null;
+	this.remoteId = null;
+	this.plays = null;
+	this.views = null;
+	this.validationErrors = null;
+	this.errorType = null;
+	this.errorNumber = null;
+	this.errorDescription = null;
+	this.hasSubmitResultsLog = null;
+	this.hasSubmitSentDataLog = null;
+	this.hasUpdateResultsLog = null;
+	this.hasUpdateSentDataLog = null;
+	this.hasDeleteResultsLog = null;
+	this.hasDeleteSentDataLog = null;
+}
+KalturaEntryDistribution.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	submittedAtGreaterThanOrEqual	int		.
+ * @param	submittedAtLessThanOrEqual	int		.
+ * @param	entryIdEqual	string		.
+ * @param	entryIdIn	string		.
+ * @param	distributionProfileIdEqual	int		.
+ * @param	distributionProfileIdIn	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ * @param	dirtyStatusEqual	int		.
+ * @param	dirtyStatusIn	string		.
+ * @param	sunriseGreaterThanOrEqual	int		.
+ * @param	sunriseLessThanOrEqual	int		.
+ * @param	sunsetGreaterThanOrEqual	int		.
+ * @param	sunsetLessThanOrEqual	int		.
+ */
+function KalturaEntryDistributionBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.submittedAtGreaterThanOrEqual = null;
+	this.submittedAtLessThanOrEqual = null;
+	this.entryIdEqual = null;
+	this.entryIdIn = null;
+	this.distributionProfileIdEqual = null;
+	this.distributionProfileIdIn = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+	this.dirtyStatusEqual = null;
+	this.dirtyStatusIn = null;
+	this.sunriseGreaterThanOrEqual = null;
+	this.sunriseLessThanOrEqual = null;
+	this.sunsetGreaterThanOrEqual = null;
+	this.sunsetLessThanOrEqual = null;
+}
+KalturaEntryDistributionBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaEntryDistributionFilter(){
+}
+KalturaEntryDistributionFilter.inheritsFrom (KalturaEntryDistributionBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaEntryDistributionListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaEntryDistributionListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	typeEqual	string		.
+ * @param	typeIn	string		.
+ */
+function KalturaDistributionProviderBaseFilter(){
+	this.typeEqual = null;
+	this.typeIn = null;
+}
+KalturaDistributionProviderBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaDistributionProviderFilter(){
+}
+KalturaDistributionProviderFilter.inheritsFrom (KalturaDistributionProviderBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaDistributionProviderListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaDistributionProviderListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		Auto generated
+ *	 (readOnly).
+ * @param	createdAt	int		Generic distribution provider creation date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	updatedAt	int		Generic distribution provider last update date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	partnerId	int		 (readOnly).
+ * @param	isDefault	bool		.
+ * @param	status	int		 (readOnly).
+ * @param	optionalFlavorParamsIds	string		.
+ * @param	requiredFlavorParamsIds	string		.
+ * @param	optionalThumbDimensions	array		.
+ * @param	requiredThumbDimensions	array		.
+ * @param	editableFields	string		.
+ * @param	mandatoryFields	string		.
+ */
+function KalturaGenericDistributionProvider(){
+	this.id = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.partnerId = null;
+	this.isDefault = null;
+	this.status = null;
+	this.optionalFlavorParamsIds = null;
+	this.requiredFlavorParamsIds = null;
+	this.optionalThumbDimensions = null;
+	this.requiredThumbDimensions = null;
+	this.editableFields = null;
+	this.mandatoryFields = null;
+}
+KalturaGenericDistributionProvider.inheritsFrom (KalturaDistributionProvider);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	isDefaultEqual	bool		.
+ * @param	isDefaultIn	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ */
+function KalturaGenericDistributionProviderBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.isDefaultEqual = null;
+	this.isDefaultIn = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+}
+KalturaGenericDistributionProviderBaseFilter.inheritsFrom (KalturaDistributionProviderFilter);
+
+
+/**
+ */
+function KalturaGenericDistributionProviderFilter(){
+}
+KalturaGenericDistributionProviderFilter.inheritsFrom (KalturaGenericDistributionProviderBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaGenericDistributionProviderListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaGenericDistributionProviderListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	id	int		Auto generated
+ *	 (readOnly).
+ * @param	createdAt	int		Generic distribution provider action creation date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	updatedAt	int		Generic distribution provider action last update date as Unix timestamp (In seconds)
+ *	 (readOnly).
+ * @param	genericDistributionProviderId	int		 (insertOnly).
+ * @param	action	int		 (insertOnly).
+ * @param	status	int		 (readOnly).
+ * @param	resultsParser	int		.
+ * @param	protocol	int		.
+ * @param	serverAddress	string		.
+ * @param	remotePath	string		.
+ * @param	remoteUsername	string		.
+ * @param	remotePassword	string		.
+ * @param	editableFields	string		.
+ * @param	mandatoryFields	string		.
+ * @param	mrssTransformer	string		 (readOnly).
+ * @param	mrssValidator	string		 (readOnly).
+ * @param	resultsTransformer	string		 (readOnly).
+ */
+function KalturaGenericDistributionProviderAction(){
+	this.id = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.genericDistributionProviderId = null;
+	this.action = null;
+	this.status = null;
+	this.resultsParser = null;
+	this.protocol = null;
+	this.serverAddress = null;
+	this.remotePath = null;
+	this.remoteUsername = null;
+	this.remotePassword = null;
+	this.editableFields = null;
+	this.mandatoryFields = null;
+	this.mrssTransformer = null;
+	this.mrssValidator = null;
+	this.resultsTransformer = null;
+}
+KalturaGenericDistributionProviderAction.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	genericDistributionProviderIdEqual	int		.
+ * @param	genericDistributionProviderIdIn	string		.
+ * @param	actionEqual	int		.
+ * @param	actionIn	string		.
+ */
+function KalturaGenericDistributionProviderActionBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.genericDistributionProviderIdEqual = null;
+	this.genericDistributionProviderIdIn = null;
+	this.actionEqual = null;
+	this.actionIn = null;
+}
+KalturaGenericDistributionProviderActionBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaGenericDistributionProviderActionFilter(){
+}
+KalturaGenericDistributionProviderActionFilter.inheritsFrom (KalturaGenericDistributionProviderActionBaseFilter);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaGenericDistributionProviderActionListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaGenericDistributionProviderActionListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	string		.
+ * @param	entryIdEqual	string		.
+ * @param	parentIdEqual	string		.
+ * @param	parentIdIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	userIdEqual	string		.
+ * @param	userIdIn	string		.
+ */
+function KalturaAnnotationBaseFilter(){
+	this.idEqual = null;
+	this.entryIdEqual = null;
+	this.parentIdEqual = null;
+	this.parentIdIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.userIdEqual = null;
+	this.userIdIn = null;
+}
+KalturaAnnotationBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaAnnotationFilter(){
+}
+KalturaAnnotationFilter.inheritsFrom (KalturaAnnotationBaseFilter);
+
+
+/**
+ * @param	id	string		 (readOnly).
+ * @param	entryId	string		.
+ * @param	partnerId	int		 (readOnly).
+ * @param	parentId	string		.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ * @param	text	string		.
+ * @param	tags	string		.
+ * @param	startTime	int		.
+ * @param	endTime	int		.
+ * @param	userId	string		 (readOnly).
+ * @param	partnerData	string		.
+ */
+function KalturaAnnotation(){
+	this.id = null;
+	this.entryId = null;
+	this.partnerId = null;
+	this.parentId = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.text = null;
+	this.tags = null;
+	this.startTime = null;
+	this.endTime = null;
+	this.userId = null;
+	this.partnerData = null;
+}
+KalturaAnnotation.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaAnnotationListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaAnnotationListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	expiresAtGreaterThanOrEqual	int		.
+ * @param	expiresAtLessThanOrEqual	int		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	userIdEqual	string		.
+ * @param	userIdIn	string		.
+ * @param	systemNameEqual	string		.
+ * @param	systemNameIn	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ */
+function KalturaShortLinkBaseFilter(){
+	this.idEqual = null;
+	this.idIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.expiresAtGreaterThanOrEqual = null;
+	this.expiresAtLessThanOrEqual = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.userIdEqual = null;
+	this.userIdIn = null;
+	this.systemNameEqual = null;
+	this.systemNameIn = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+}
+KalturaShortLinkBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaShortLinkFilter(){
+}
+KalturaShortLinkFilter.inheritsFrom (KalturaShortLinkBaseFilter);
+
+
+/**
+ * @param	id	int		 (readOnly).
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ * @param	expiresAt	int		.
+ * @param	partnerId	int		 (readOnly).
+ * @param	userId	string		.
+ * @param	name	string		.
+ * @param	systemName	string		.
+ * @param	fullUrl	string		.
+ * @param	status	int		.
+ */
+function KalturaShortLink(){
+	this.id = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.expiresAt = null;
+	this.partnerId = null;
+	this.userId = null;
+	this.name = null;
+	this.systemName = null;
+	this.fullUrl = null;
+	this.status = null;
+}
+KalturaShortLink.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaShortLinkListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaShortLinkListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
  * @param	field	string		.
  * @param	value	string		.
  */
@@ -3590,6 +4480,200 @@ function KalturaSiteRestriction(){
 	this.siteList = null;
 }
 KalturaSiteRestriction.inheritsFrom (KalturaBaseRestriction);
+
+
+/**
+ * @param	idEqual	int		.
+ * @param	idGreaterThanOrEqual	int		.
+ * @param	partnerIdEqual	int		.
+ * @param	partnerIdIn	string		.
+ * @param	partnerIdNotIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	processorExpirationGreaterThanOrEqual	int		.
+ * @param	processorExpirationLessThanOrEqual	int		.
+ * @param	executionAttemptsGreaterThanOrEqual	int		.
+ * @param	executionAttemptsLessThanOrEqual	int		.
+ * @param	lockVersionGreaterThanOrEqual	int		.
+ * @param	lockVersionLessThanOrEqual	int		.
+ */
+function KalturaBaseJobBaseFilter(){
+	this.idEqual = null;
+	this.idGreaterThanOrEqual = null;
+	this.partnerIdEqual = null;
+	this.partnerIdIn = null;
+	this.partnerIdNotIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.processorExpirationGreaterThanOrEqual = null;
+	this.processorExpirationLessThanOrEqual = null;
+	this.executionAttemptsGreaterThanOrEqual = null;
+	this.executionAttemptsLessThanOrEqual = null;
+	this.lockVersionGreaterThanOrEqual = null;
+	this.lockVersionLessThanOrEqual = null;
+}
+KalturaBaseJobBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaBaseJobFilter(){
+}
+KalturaBaseJobFilter.inheritsFrom (KalturaBaseJobBaseFilter);
+
+
+/**
+ * @param	entryIdEqual	string		.
+ * @param	jobTypeEqual	string		.
+ * @param	jobTypeIn	string		.
+ * @param	jobTypeNotIn	string		.
+ * @param	jobSubTypeEqual	int		.
+ * @param	jobSubTypeIn	string		.
+ * @param	jobSubTypeNotIn	string		.
+ * @param	onStressDivertToEqual	int		.
+ * @param	onStressDivertToIn	string		.
+ * @param	onStressDivertToNotIn	string		.
+ * @param	statusEqual	int		.
+ * @param	statusIn	string		.
+ * @param	statusNotIn	string		.
+ * @param	abortEqual	int		.
+ * @param	checkAgainTimeoutGreaterThanOrEqual	int		.
+ * @param	checkAgainTimeoutLessThanOrEqual	int		.
+ * @param	progressGreaterThanOrEqual	int		.
+ * @param	progressLessThanOrEqual	int		.
+ * @param	updatesCountGreaterThanOrEqual	int		.
+ * @param	updatesCountLessThanOrEqual	int		.
+ * @param	priorityGreaterThanOrEqual	int		.
+ * @param	priorityLessThanOrEqual	int		.
+ * @param	priorityEqual	int		.
+ * @param	priorityIn	string		.
+ * @param	priorityNotIn	string		.
+ * @param	twinJobIdEqual	int		.
+ * @param	twinJobIdIn	string		.
+ * @param	twinJobIdNotIn	string		.
+ * @param	bulkJobIdEqual	int		.
+ * @param	bulkJobIdIn	string		.
+ * @param	bulkJobIdNotIn	string		.
+ * @param	parentJobIdEqual	int		.
+ * @param	parentJobIdIn	string		.
+ * @param	parentJobIdNotIn	string		.
+ * @param	rootJobIdEqual	int		.
+ * @param	rootJobIdIn	string		.
+ * @param	rootJobIdNotIn	string		.
+ * @param	queueTimeGreaterThanOrEqual	int		.
+ * @param	queueTimeLessThanOrEqual	int		.
+ * @param	finishTimeGreaterThanOrEqual	int		.
+ * @param	finishTimeLessThanOrEqual	int		.
+ * @param	errTypeEqual	int		.
+ * @param	errTypeIn	string		.
+ * @param	errTypeNotIn	string		.
+ * @param	errNumberEqual	int		.
+ * @param	errNumberIn	string		.
+ * @param	errNumberNotIn	string		.
+ * @param	fileSizeLessThan	int		.
+ * @param	fileSizeGreaterThan	int		.
+ * @param	lastWorkerRemoteEqual	bool		.
+ * @param	schedulerIdEqual	int		.
+ * @param	schedulerIdIn	string		.
+ * @param	schedulerIdNotIn	string		.
+ * @param	workerIdEqual	int		.
+ * @param	workerIdIn	string		.
+ * @param	workerIdNotIn	string		.
+ * @param	batchIndexEqual	int		.
+ * @param	batchIndexIn	string		.
+ * @param	batchIndexNotIn	string		.
+ * @param	lastSchedulerIdEqual	int		.
+ * @param	lastSchedulerIdIn	string		.
+ * @param	lastSchedulerIdNotIn	string		.
+ * @param	lastWorkerIdEqual	int		.
+ * @param	lastWorkerIdIn	string		.
+ * @param	lastWorkerIdNotIn	string		.
+ * @param	dcEqual	int		.
+ * @param	dcIn	string		.
+ * @param	dcNotIn	string		.
+ */
+function KalturaBatchJobBaseFilter(){
+	this.entryIdEqual = null;
+	this.jobTypeEqual = null;
+	this.jobTypeIn = null;
+	this.jobTypeNotIn = null;
+	this.jobSubTypeEqual = null;
+	this.jobSubTypeIn = null;
+	this.jobSubTypeNotIn = null;
+	this.onStressDivertToEqual = null;
+	this.onStressDivertToIn = null;
+	this.onStressDivertToNotIn = null;
+	this.statusEqual = null;
+	this.statusIn = null;
+	this.statusNotIn = null;
+	this.abortEqual = null;
+	this.checkAgainTimeoutGreaterThanOrEqual = null;
+	this.checkAgainTimeoutLessThanOrEqual = null;
+	this.progressGreaterThanOrEqual = null;
+	this.progressLessThanOrEqual = null;
+	this.updatesCountGreaterThanOrEqual = null;
+	this.updatesCountLessThanOrEqual = null;
+	this.priorityGreaterThanOrEqual = null;
+	this.priorityLessThanOrEqual = null;
+	this.priorityEqual = null;
+	this.priorityIn = null;
+	this.priorityNotIn = null;
+	this.twinJobIdEqual = null;
+	this.twinJobIdIn = null;
+	this.twinJobIdNotIn = null;
+	this.bulkJobIdEqual = null;
+	this.bulkJobIdIn = null;
+	this.bulkJobIdNotIn = null;
+	this.parentJobIdEqual = null;
+	this.parentJobIdIn = null;
+	this.parentJobIdNotIn = null;
+	this.rootJobIdEqual = null;
+	this.rootJobIdIn = null;
+	this.rootJobIdNotIn = null;
+	this.queueTimeGreaterThanOrEqual = null;
+	this.queueTimeLessThanOrEqual = null;
+	this.finishTimeGreaterThanOrEqual = null;
+	this.finishTimeLessThanOrEqual = null;
+	this.errTypeEqual = null;
+	this.errTypeIn = null;
+	this.errTypeNotIn = null;
+	this.errNumberEqual = null;
+	this.errNumberIn = null;
+	this.errNumberNotIn = null;
+	this.fileSizeLessThan = null;
+	this.fileSizeGreaterThan = null;
+	this.lastWorkerRemoteEqual = null;
+	this.schedulerIdEqual = null;
+	this.schedulerIdIn = null;
+	this.schedulerIdNotIn = null;
+	this.workerIdEqual = null;
+	this.workerIdIn = null;
+	this.workerIdNotIn = null;
+	this.batchIndexEqual = null;
+	this.batchIndexIn = null;
+	this.batchIndexNotIn = null;
+	this.lastSchedulerIdEqual = null;
+	this.lastSchedulerIdIn = null;
+	this.lastSchedulerIdNotIn = null;
+	this.lastWorkerIdEqual = null;
+	this.lastWorkerIdIn = null;
+	this.lastWorkerIdNotIn = null;
+	this.dcEqual = null;
+	this.dcIn = null;
+	this.dcNotIn = null;
+}
+KalturaBatchJobBaseFilter.inheritsFrom (KalturaBaseJobFilter);
+
+
+/**
+ */
+function KalturaBatchJobFilter(){
+}
+KalturaBatchJobFilter.inheritsFrom (KalturaBatchJobBaseFilter);
 
 
 /**
@@ -3666,6 +4750,42 @@ KalturaNotificationFilter.inheritsFrom (KalturaNotificationBaseFilter);
 
 
 /**
+ * @param	assetParamsIdEqual	int		.
+ * @param	assetParamsVersionEqual	string		.
+ * @param	assetIdEqual	string		.
+ * @param	assetVersionEqual	string		.
+ */
+function KalturaAssetParamsOutputBaseFilter(){
+	this.assetParamsIdEqual = null;
+	this.assetParamsVersionEqual = null;
+	this.assetIdEqual = null;
+	this.assetVersionEqual = null;
+}
+KalturaAssetParamsOutputBaseFilter.inheritsFrom (KalturaAssetParamsFilter);
+
+
+/**
+ */
+function KalturaAssetParamsOutputFilter(){
+}
+KalturaAssetParamsOutputFilter.inheritsFrom (KalturaAssetParamsOutputBaseFilter);
+
+
+/**
+ */
+function KalturaFlavorAssetBaseFilter(){
+}
+KalturaFlavorAssetBaseFilter.inheritsFrom (KalturaAssetFilter);
+
+
+/**
+ */
+function KalturaFlavorAssetFilter(){
+}
+KalturaFlavorAssetFilter.inheritsFrom (KalturaFlavorAssetBaseFilter);
+
+
+/**
  */
 function KalturaMediaFlavorParamsBaseFilter(){
 }
@@ -3695,6 +4815,20 @@ KalturaMediaFlavorParamsOutputFilter.inheritsFrom (KalturaMediaFlavorParamsOutpu
 
 /**
  */
+function KalturaThumbAssetBaseFilter(){
+}
+KalturaThumbAssetBaseFilter.inheritsFrom (KalturaAssetFilter);
+
+
+/**
+ */
+function KalturaThumbAssetFilter(){
+}
+KalturaThumbAssetFilter.inheritsFrom (KalturaThumbAssetBaseFilter);
+
+
+/**
+ */
 function KalturaLiveStreamAdminEntryBaseFilter(){
 }
 KalturaLiveStreamAdminEntryBaseFilter.inheritsFrom (KalturaLiveStreamEntryFilter);
@@ -3705,6 +4839,20 @@ KalturaLiveStreamAdminEntryBaseFilter.inheritsFrom (KalturaLiveStreamEntryFilter
 function KalturaLiveStreamAdminEntryFilter(){
 }
 KalturaLiveStreamAdminEntryFilter.inheritsFrom (KalturaLiveStreamAdminEntryBaseFilter);
+
+
+/**
+ */
+function KalturaAdminUserBaseFilter(){
+}
+KalturaAdminUserBaseFilter.inheritsFrom (KalturaUserFilter);
+
+
+/**
+ */
+function KalturaAdminUserFilter(){
+}
+KalturaAdminUserFilter.inheritsFrom (KalturaAdminUserBaseFilter);
 
 
 /**
@@ -3765,6 +4913,51 @@ KalturaYahooSyndicationFeedFilter.inheritsFrom (KalturaYahooSyndicationFeedBaseF
 
 /**
  */
+function KalturaApiActionPermissionItemBaseFilter(){
+}
+KalturaApiActionPermissionItemBaseFilter.inheritsFrom (KalturaPermissionItemFilter);
+
+
+/**
+ */
+function KalturaApiActionPermissionItemFilter(){
+}
+KalturaApiActionPermissionItemFilter.inheritsFrom (KalturaApiActionPermissionItemBaseFilter);
+
+
+/**
+ */
+function KalturaApiParameterPermissionItemBaseFilter(){
+}
+KalturaApiParameterPermissionItemBaseFilter.inheritsFrom (KalturaPermissionItemFilter);
+
+
+/**
+ */
+function KalturaApiParameterPermissionItemFilter(){
+}
+KalturaApiParameterPermissionItemFilter.inheritsFrom (KalturaApiParameterPermissionItemBaseFilter);
+
+
+/**
+ * @param	assetParamsId	int		.
+ * @param	assetParamsVersion	string		.
+ * @param	assetId	string		.
+ * @param	assetVersion	string		.
+ * @param	readyBehavior	int		.
+ */
+function KalturaAssetParamsOutput(){
+	this.assetParamsId = null;
+	this.assetParamsVersion = null;
+	this.assetId = null;
+	this.assetVersion = null;
+	this.readyBehavior = null;
+}
+KalturaAssetParamsOutput.inheritsFrom (KalturaAssetParams);
+
+
+/**
+ */
 function KalturaMediaFlavorParams(){
 }
 KalturaMediaFlavorParams.inheritsFrom (KalturaFlavorParams);
@@ -3775,6 +4968,30 @@ KalturaMediaFlavorParams.inheritsFrom (KalturaFlavorParams);
 function KalturaMediaFlavorParamsOutput(){
 }
 KalturaMediaFlavorParamsOutput.inheritsFrom (KalturaFlavorParamsOutput);
+
+
+/**
+ * @param	service	string		.
+ * @param	action	string		.
+ */
+function KalturaApiActionPermissionItem(){
+	this.service = null;
+	this.action = null;
+}
+KalturaApiActionPermissionItem.inheritsFrom (KalturaPermissionItem);
+
+
+/**
+ * @param	object	string		.
+ * @param	parameter	string		.
+ * @param	action	string		.
+ */
+function KalturaApiParameterPermissionItem(){
+	this.object = null;
+	this.parameter = null;
+	this.action = null;
+}
+KalturaApiParameterPermissionItem.inheritsFrom (KalturaPermissionItem);
 
 
 /**
@@ -3841,372 +5058,5 @@ function KalturaYahooSyndicationFeed(){
 	this.feedLandingPage = null;
 }
 KalturaYahooSyndicationFeed.inheritsFrom (KalturaBaseSyndicationFeed);
-
-
-/**
- * @param	mailType	int		.
- * @param	mailPriority	int		.
- * @param	status	int		.
- * @param	recipientName	string		.
- * @param	recipientEmail	string		.
- * @param	recipientId	int		kuserId  .
- * @param	fromName	string		.
- * @param	fromEmail	string		.
- * @param	bodyParams	string		.
- * @param	subjectParams	string		.
- * @param	templatePath	string		.
- * @param	culture	int		.
- * @param	campaignId	int		.
- * @param	minSendDate	int		.
- */
-function KalturaMailJob(){
-	this.mailType = null;
-	this.mailPriority = null;
-	this.status = null;
-	this.recipientName = null;
-	this.recipientEmail = null;
-	this.recipientId = null;
-	this.fromName = null;
-	this.fromEmail = null;
-	this.bodyParams = null;
-	this.subjectParams = null;
-	this.templatePath = null;
-	this.culture = null;
-	this.campaignId = null;
-	this.minSendDate = null;
-}
-KalturaMailJob.inheritsFrom (KalturaBaseJob);
-
-
-/**
- * @param	entryIds	string		Comma separated list of entry ids
- *	.
- * @param	flavorParamsId	int		Flavor params id to use for conversion
- *	.
- * @param	puserId	string		The id of the requesting user
- *	.
- */
-function KalturaBulkDownloadJobData(){
-	this.entryIds = null;
-	this.flavorParamsId = null;
-	this.puserId = null;
-}
-KalturaBulkDownloadJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	userId	int		.
- * @param	uploadedBy	string		The screen name of the user
- *	.
- * @param	conversionProfileId	int		Selected profile id for all bulk entries
- *	.
- * @param	csvFilePath	string		Created by the API
- *	.
- * @param	resultsFileLocalPath	string		Created by the API
- *	.
- * @param	resultsFileUrl	string		Created by the API
- *	.
- * @param	numOfEntries	int		Number of created entries
- *	.
- * @param	csvVersion	string		The version of the csv file
- *	.
- */
-function KalturaBulkUploadJobData(){
-	this.userId = null;
-	this.uploadedBy = null;
-	this.conversionProfileId = null;
-	this.csvFilePath = null;
-	this.resultsFileLocalPath = null;
-	this.resultsFileUrl = null;
-	this.numOfEntries = null;
-	this.csvVersion = null;
-}
-KalturaBulkUploadJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	srcFileSyncLocalPath	string		.
- * @param	actualSrcFileSyncLocalPath	string		The translated path as used by the scheduler.
- * @param	srcFileSyncRemoteUrl	string		.
- * @param	engineVersion	int		.
- * @param	flavorParamsOutputId	int		.
- * @param	flavorParamsOutput	KalturaFlavorParamsOutput		.
- * @param	mediaInfoId	int		.
- * @param	currentOperationSet	int		.
- * @param	currentOperationIndex	int		.
- */
-function KalturaConvartableJobData(){
-	this.srcFileSyncLocalPath = null;
-	this.actualSrcFileSyncLocalPath = null;
-	this.srcFileSyncRemoteUrl = null;
-	this.engineVersion = null;
-	this.flavorParamsOutputId = null;
-	this.flavorParamsOutput = null;
-	this.mediaInfoId = null;
-	this.currentOperationSet = null;
-	this.currentOperationIndex = null;
-}
-KalturaConvartableJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	destDirLocalPath	string		.
- * @param	destDirRemoteUrl	string		.
- * @param	destFileName	string		.
- * @param	inputXmlLocalPath	string		.
- * @param	inputXmlRemoteUrl	string		.
- * @param	commandLinesStr	string		.
- * @param	flavors	array		.
- */
-function KalturaConvertCollectionJobData(){
-	this.destDirLocalPath = null;
-	this.destDirRemoteUrl = null;
-	this.destFileName = null;
-	this.inputXmlLocalPath = null;
-	this.inputXmlRemoteUrl = null;
-	this.commandLinesStr = null;
-	this.flavors = null;
-}
-KalturaConvertCollectionJobData.inheritsFrom (KalturaConvartableJobData);
-
-
-/**
- * @param	destFileSyncLocalPath	string		.
- * @param	destFileSyncRemoteUrl	string		.
- * @param	logFileSyncLocalPath	string		.
- * @param	flavorAssetId	string		.
- * @param	remoteMediaId	string		.
- */
-function KalturaConvertJobData(){
-	this.destFileSyncLocalPath = null;
-	this.destFileSyncRemoteUrl = null;
-	this.logFileSyncLocalPath = null;
-	this.flavorAssetId = null;
-	this.remoteMediaId = null;
-}
-KalturaConvertJobData.inheritsFrom (KalturaConvartableJobData);
-
-
-/**
- * @param	inputFileSyncLocalPath	string		.
- * @param	thumbHeight	int		The height of last created thumbnail, will be used to comapare if this thumbnail is the best we can have
- *	.
- * @param	thumbBitrate	int		The bit rate of last created thumbnail, will be used to comapare if this thumbnail is the best we can have
- *	.
- */
-function KalturaConvertProfileJobData(){
-	this.inputFileSyncLocalPath = null;
-	this.thumbHeight = null;
-	this.thumbBitrate = null;
-}
-KalturaConvertProfileJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	flavorAssetId	string		.
- */
-function KalturaExtractMediaJobData(){
-	this.flavorAssetId = null;
-}
-KalturaExtractMediaJobData.inheritsFrom (KalturaConvartableJobData);
-
-
-/**
- */
-function KalturaFlattenJobData(){
-}
-KalturaFlattenJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	srcFileUrl	string		.
- * @param	destFileLocalPath	string		.
- * @param	flavorAssetId	string		.
- */
-function KalturaImportJobData(){
-	this.srcFileUrl = null;
-	this.destFileLocalPath = null;
-	this.flavorAssetId = null;
-}
-KalturaImportJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	mailType	int		.
- * @param	mailPriority	int		.
- * @param	status	int		.
- * @param	recipientName	string		.
- * @param	recipientEmail	string		.
- * @param	recipientId	int		kuserId  .
- * @param	fromName	string		.
- * @param	fromEmail	string		.
- * @param	bodyParams	string		.
- * @param	subjectParams	string		.
- * @param	templatePath	string		.
- * @param	culture	int		.
- * @param	campaignId	int		.
- * @param	minSendDate	int		.
- * @param	isHtml	bool		.
- */
-function KalturaMailJobData(){
-	this.mailType = null;
-	this.mailPriority = null;
-	this.status = null;
-	this.recipientName = null;
-	this.recipientEmail = null;
-	this.recipientId = null;
-	this.fromName = null;
-	this.fromEmail = null;
-	this.bodyParams = null;
-	this.subjectParams = null;
-	this.templatePath = null;
-	this.culture = null;
-	this.campaignId = null;
-	this.minSendDate = null;
-	this.isHtml = null;
-}
-KalturaMailJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	userId	string		.
- * @param	type	int		.
- * @param	typeAsString	string		.
- * @param	objectId	string		.
- * @param	status	int		.
- * @param	data	string		.
- * @param	numberOfAttempts	int		.
- * @param	notificationResult	string		.
- * @param	objType	int		.
- */
-function KalturaNotificationJobData(){
-	this.userId = null;
-	this.type = null;
-	this.typeAsString = null;
-	this.objectId = null;
-	this.status = null;
-	this.data = null;
-	this.numberOfAttempts = null;
-	this.notificationResult = null;
-	this.objType = null;
-}
-KalturaNotificationJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	flavorAssetId	string		.
- * @param	createThumb	bool		Indicates if a thumbnail should be created
- *	.
- * @param	thumbPath	string		The path of the created thumbnail
- *	.
- * @param	thumbOffset	int		The position of the thumbnail in the media file
- *	.
- * @param	thumbHeight	int		The height of the movie, will be used to comapare if this thumbnail is the best we can have
- *	.
- * @param	thumbBitrate	int		The bit rate of the movie, will be used to comapare if this thumbnail is the best we can have
- *	.
- */
-function KalturaPostConvertJobData(){
-	this.flavorAssetId = null;
-	this.createThumb = null;
-	this.thumbPath = null;
-	this.thumbOffset = null;
-	this.thumbHeight = null;
-	this.thumbBitrate = null;
-}
-KalturaPostConvertJobData.inheritsFrom (KalturaConvartableJobData);
-
-
-/**
- * @param	streamID	string		.
- * @param	backupStreamID	string		.
- * @param	rtmp	string		.
- * @param	encoderIP	string		.
- * @param	backupEncoderIP	string		.
- * @param	encoderPassword	string		.
- * @param	encoderUsername	string		.
- * @param	endDate	int		.
- * @param	returnVal	string		.
- * @param	mediaType	int		.
- * @param	primaryBroadcastingUrl	string		.
- * @param	secondaryBroadcastingUrl	string		.
- * @param	streamName	string		.
- */
-function KalturaProvisionJobData(){
-	this.streamID = null;
-	this.backupStreamID = null;
-	this.rtmp = null;
-	this.encoderIP = null;
-	this.backupEncoderIP = null;
-	this.encoderPassword = null;
-	this.encoderUsername = null;
-	this.endDate = null;
-	this.returnVal = null;
-	this.mediaType = null;
-	this.primaryBroadcastingUrl = null;
-	this.secondaryBroadcastingUrl = null;
-	this.streamName = null;
-}
-KalturaProvisionJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	srcFileUrl	string		.
- * @param	destFileLocalPath	string		.
- */
-function KalturaPullJobData(){
-	this.srcFileUrl = null;
-	this.destFileLocalPath = null;
-}
-KalturaPullJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- * @param	srcFileUrl	string		.
- * @param	destFileUrl	string		Should be set by the API
- *	.
- */
-function KalturaRemoteConvertJobData(){
-	this.srcFileUrl = null;
-	this.destFileUrl = null;
-}
-KalturaRemoteConvertJobData.inheritsFrom (KalturaConvartableJobData);
-
-
-/**
- * @param	serverUrl	string		.
- * @param	serverUsername	string		.
- * @param	serverPassword	string		.
- * @param	ftpPassiveMode	bool		.
- * @param	srcFileSyncLocalPath	string		.
- * @param	srcFileSyncId	string		.
- */
-function KalturaStorageJobData(){
-	this.serverUrl = null;
-	this.serverUsername = null;
-	this.serverPassword = null;
-	this.ftpPassiveMode = null;
-	this.srcFileSyncLocalPath = null;
-	this.srcFileSyncId = null;
-}
-KalturaStorageJobData.inheritsFrom (KalturaJobData);
-
-
-/**
- */
-function KalturaStorageDeleteJobData(){
-}
-KalturaStorageDeleteJobData.inheritsFrom (KalturaStorageJobData);
-
-
-/**
- * @param	destFileSyncStoredPath	string		.
- * @param	force	bool		.
- */
-function KalturaStorageExportJobData(){
-	this.destFileSyncStoredPath = null;
-	this.force = null;
-}
-KalturaStorageExportJobData.inheritsFrom (KalturaStorageJobData);
 
 
