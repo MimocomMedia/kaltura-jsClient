@@ -183,6 +183,7 @@ KalturaDistributionProfile.inheritsFrom (KalturaObjectBase);
  * @param	commercialPolicy	string		.
  * @param	ugcPolicy	string		.
  * @param	target	string		.
+ * @param	metadataProfileId	int		.
  */
 function KalturaYouTubeDistributionProfile(){
 	this.username = null;
@@ -200,6 +201,7 @@ function KalturaYouTubeDistributionProfile(){
 	this.commercialPolicy = null;
 	this.ugcPolicy = null;
 	this.target = null;
+	this.metadataProfileId = null;
 }
 KalturaYouTubeDistributionProfile.inheritsFrom (KalturaDistributionProfile);
 
@@ -633,6 +635,7 @@ KalturaBaseEntry.inheritsFrom (KalturaObjectBase);
  *	@var string.
  * @param	idIn	string		This filter should be in use for retrieving few specific entries (string should include comma separated list of entryId strings).
  *	@var string.
+ * @param	idNotIn	string		.
  * @param	nameLike	string		This filter should be in use for retrieving specific entries. It should include only one string to search for in entry names (no wildcards, spaces are treated as part of the string).
  *	@var string.
  * @param	nameMultiLikeOr	string		This filter should be in use for retrieving specific entries. It could include few (comma separated) strings for searching in entry names, while applying an OR logic to retrieve entries that contain at least one input string (no wildcards, spaces are treated as part of the string).
@@ -709,6 +712,7 @@ KalturaBaseEntry.inheritsFrom (KalturaObjectBase);
 function KalturaBaseEntryBaseFilter(){
 	this.idEqual = null;
 	this.idIn = null;
+	this.idNotIn = null;
 	this.nameLike = null;
 	this.nameMultiLikeOr = null;
 	this.nameMultiLikeAnd = null;
@@ -836,6 +840,7 @@ KalturaEntryContextDataParams.inheritsFrom (KalturaObjectBase);
  * @param	isSiteRestricted	bool		.
  * @param	isCountryRestricted	bool		.
  * @param	isSessionRestricted	bool		.
+ * @param	isIpAddressRestricted	bool		.
  * @param	previewLength	int		.
  * @param	isScheduledNow	bool		.
  * @param	isAdmin	bool		.
@@ -844,6 +849,7 @@ function KalturaEntryContextDataResult(){
 	this.isSiteRestricted = null;
 	this.isCountryRestricted = null;
 	this.isSessionRestricted = null;
+	this.isIpAddressRestricted = null;
 	this.previewLength = null;
 	this.isScheduledNow = null;
 	this.isAdmin = null;
@@ -1529,13 +1535,13 @@ KalturaFlavorAssetWithParams.inheritsFrom (KalturaObjectBase);
 
 /**
  * @param	isSystemDefaultEqual	int		.
- * @param	formatEqual	string		.
  * @param	tagsEqual	string		.
+ * @param	formatEqual	string		.
  */
 function KalturaAssetParamsBaseFilter(){
 	this.isSystemDefaultEqual = null;
-	this.formatEqual = null;
 	this.tagsEqual = null;
+	this.formatEqual = null;
 }
 KalturaAssetParamsBaseFilter.inheritsFrom (KalturaFilter);
 
@@ -1850,7 +1856,7 @@ KalturaClientNotification.inheritsFrom (KalturaObjectBase);
  * @param	secret	string		 (readOnly).
  * @param	adminSecret	string		 (readOnly).
  * @param	cmsPassword	string		 (readOnly).
- * @param	allowMultiNotification	int		 (readOnly).
+ * @param	allowMultiNotification	int		.
  * @param	adminLoginUsersQuota	int		 (readOnly).
  * @param	adminUserId	string		.
  */
@@ -1970,11 +1976,11 @@ KalturaPermissionItemFilter.inheritsFrom (KalturaPermissionItemBaseFilter);
  * @param	objects	array		 (readOnly).
  * @param	totalCount	int		 (readOnly).
  */
-function KalturaPremissionItemListResponse(){
+function KalturaPermissionItemListResponse(){
 	this.objects = null;
 	this.totalCount = null;
 }
-KalturaPremissionItemListResponse.inheritsFrom (KalturaObjectBase);
+KalturaPermissionItemListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -2554,6 +2560,7 @@ KalturaUiConf.inheritsFrom (KalturaObjectBase);
  * @param	partnerIdEqual	int		.
  * @param	partnerIdIn	string		.
  * @param	objTypeEqual	int		.
+ * @param	objTypeIn	string		.
  * @param	tagsMultiLikeOr	string		.
  * @param	tagsMultiLikeAnd	string		.
  * @param	createdAtGreaterThanOrEqual	int		.
@@ -2570,6 +2577,7 @@ function KalturaUiConfBaseFilter(){
 	this.partnerIdEqual = null;
 	this.partnerIdIn = null;
 	this.objTypeEqual = null;
+	this.objTypeIn = null;
 	this.tagsMultiLikeOr = null;
 	this.tagsMultiLikeAnd = null;
 	this.createdAtGreaterThanOrEqual = null;
@@ -2598,6 +2606,34 @@ function KalturaUiConfListResponse(){
 	this.totalCount = null;
 }
 KalturaUiConfListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	value	string		.
+ */
+function KalturaString(){
+	this.value = null;
+}
+KalturaString.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	type	int		UiConf Type
+ *	.
+ * @param	versions	array		Available versions
+ *	.
+ * @param	directory	string		The direcotry this type is saved at
+ *	.
+ * @param	filename	string		Filename for this UiConf type
+ *	.
+ */
+function KalturaUiConfTypeInfo(){
+	this.type = null;
+	this.versions = null;
+	this.directory = null;
+	this.filename = null;
+}
+KalturaUiConfTypeInfo.inheritsFrom (KalturaObjectBase);
 
 
 /**
@@ -3869,6 +3905,82 @@ KalturaVirusScanProfileListResponse.inheritsFrom (KalturaObjectBase);
 
 
 /**
+ * @param	idEqual	string		.
+ * @param	entryIdEqual	string		.
+ * @param	parentIdEqual	string		.
+ * @param	parentIdIn	string		.
+ * @param	createdAtGreaterThanOrEqual	int		.
+ * @param	createdAtLessThanOrEqual	int		.
+ * @param	updatedAtGreaterThanOrEqual	int		.
+ * @param	updatedAtLessThanOrEqual	int		.
+ * @param	userIdEqual	string		.
+ * @param	userIdIn	string		.
+ */
+function KalturaAnnotationBaseFilter(){
+	this.idEqual = null;
+	this.entryIdEqual = null;
+	this.parentIdEqual = null;
+	this.parentIdIn = null;
+	this.createdAtGreaterThanOrEqual = null;
+	this.createdAtLessThanOrEqual = null;
+	this.updatedAtGreaterThanOrEqual = null;
+	this.updatedAtLessThanOrEqual = null;
+	this.userIdEqual = null;
+	this.userIdIn = null;
+}
+KalturaAnnotationBaseFilter.inheritsFrom (KalturaFilter);
+
+
+/**
+ */
+function KalturaAnnotationFilter(){
+}
+KalturaAnnotationFilter.inheritsFrom (KalturaAnnotationBaseFilter);
+
+
+/**
+ * @param	id	string		 (readOnly).
+ * @param	entryId	string		.
+ * @param	partnerId	int		 (readOnly).
+ * @param	parentId	string		.
+ * @param	createdAt	int		 (readOnly).
+ * @param	updatedAt	int		 (readOnly).
+ * @param	text	string		.
+ * @param	tags	string		.
+ * @param	startTime	int		.
+ * @param	endTime	int		.
+ * @param	userId	string		 (readOnly).
+ * @param	partnerData	string		.
+ */
+function KalturaAnnotation(){
+	this.id = null;
+	this.entryId = null;
+	this.partnerId = null;
+	this.parentId = null;
+	this.createdAt = null;
+	this.updatedAt = null;
+	this.text = null;
+	this.tags = null;
+	this.startTime = null;
+	this.endTime = null;
+	this.userId = null;
+	this.partnerData = null;
+}
+KalturaAnnotation.inheritsFrom (KalturaObjectBase);
+
+
+/**
+ * @param	objects	array		 (readOnly).
+ * @param	totalCount	int		 (readOnly).
+ */
+function KalturaAnnotationListResponse(){
+	this.objects = null;
+	this.totalCount = null;
+}
+KalturaAnnotationListResponse.inheritsFrom (KalturaObjectBase);
+
+
+/**
  * @param	idEqual	int		.
  * @param	idIn	string		.
  * @param	createdAtGreaterThanOrEqual	int		.
@@ -4250,82 +4362,6 @@ KalturaGenericDistributionProviderActionListResponse.inheritsFrom (KalturaObject
 
 
 /**
- * @param	idEqual	string		.
- * @param	entryIdEqual	string		.
- * @param	parentIdEqual	string		.
- * @param	parentIdIn	string		.
- * @param	createdAtGreaterThanOrEqual	int		.
- * @param	createdAtLessThanOrEqual	int		.
- * @param	updatedAtGreaterThanOrEqual	int		.
- * @param	updatedAtLessThanOrEqual	int		.
- * @param	userIdEqual	string		.
- * @param	userIdIn	string		.
- */
-function KalturaAnnotationBaseFilter(){
-	this.idEqual = null;
-	this.entryIdEqual = null;
-	this.parentIdEqual = null;
-	this.parentIdIn = null;
-	this.createdAtGreaterThanOrEqual = null;
-	this.createdAtLessThanOrEqual = null;
-	this.updatedAtGreaterThanOrEqual = null;
-	this.updatedAtLessThanOrEqual = null;
-	this.userIdEqual = null;
-	this.userIdIn = null;
-}
-KalturaAnnotationBaseFilter.inheritsFrom (KalturaFilter);
-
-
-/**
- */
-function KalturaAnnotationFilter(){
-}
-KalturaAnnotationFilter.inheritsFrom (KalturaAnnotationBaseFilter);
-
-
-/**
- * @param	id	string		 (readOnly).
- * @param	entryId	string		.
- * @param	partnerId	int		 (readOnly).
- * @param	parentId	string		.
- * @param	createdAt	int		 (readOnly).
- * @param	updatedAt	int		 (readOnly).
- * @param	text	string		.
- * @param	tags	string		.
- * @param	startTime	int		.
- * @param	endTime	int		.
- * @param	userId	string		 (readOnly).
- * @param	partnerData	string		.
- */
-function KalturaAnnotation(){
-	this.id = null;
-	this.entryId = null;
-	this.partnerId = null;
-	this.parentId = null;
-	this.createdAt = null;
-	this.updatedAt = null;
-	this.text = null;
-	this.tags = null;
-	this.startTime = null;
-	this.endTime = null;
-	this.userId = null;
-	this.partnerData = null;
-}
-KalturaAnnotation.inheritsFrom (KalturaObjectBase);
-
-
-/**
- * @param	objects	array		 (readOnly).
- * @param	totalCount	int		 (readOnly).
- */
-function KalturaAnnotationListResponse(){
-	this.objects = null;
-	this.totalCount = null;
-}
-KalturaAnnotationListResponse.inheritsFrom (KalturaObjectBase);
-
-
-/**
  * @param	idEqual	int		.
  * @param	idIn	string		.
  * @param	createdAtGreaterThanOrEqual	int		.
@@ -4450,6 +4486,19 @@ function KalturaDirectoryRestriction(){
 	this.directoryRestrictionType = null;
 }
 KalturaDirectoryRestriction.inheritsFrom (KalturaBaseRestriction);
+
+
+/**
+ * @param	ipAddressRestrictionType	int		Ip address restriction type (Allow or deny)
+ *	.
+ * @param	ipAddressList	string		Comma separated list of ip address to allow to deny 
+ *	.
+ */
+function KalturaIpAddressRestriction(){
+	this.ipAddressRestrictionType = null;
+	this.ipAddressList = null;
+}
+KalturaIpAddressRestriction.inheritsFrom (KalturaBaseRestriction);
 
 
 /**
@@ -4940,6 +4989,34 @@ KalturaApiParameterPermissionItemFilter.inheritsFrom (KalturaApiParameterPermiss
 
 
 /**
+ */
+function KalturaGenericSyndicationFeedBaseFilter(){
+}
+KalturaGenericSyndicationFeedBaseFilter.inheritsFrom (KalturaBaseSyndicationFeedFilter);
+
+
+/**
+ */
+function KalturaGenericSyndicationFeedFilter(){
+}
+KalturaGenericSyndicationFeedFilter.inheritsFrom (KalturaGenericSyndicationFeedBaseFilter);
+
+
+/**
+ */
+function KalturaGenericXsltSyndicationFeedBaseFilter(){
+}
+KalturaGenericXsltSyndicationFeedBaseFilter.inheritsFrom (KalturaGenericSyndicationFeedFilter);
+
+
+/**
+ */
+function KalturaGenericXsltSyndicationFeedFilter(){
+}
+KalturaGenericXsltSyndicationFeedFilter.inheritsFrom (KalturaGenericXsltSyndicationFeedBaseFilter);
+
+
+/**
  * @param	assetParamsId	int		.
  * @param	assetParamsVersion	string		.
  * @param	assetId	string		.
@@ -4992,6 +5069,28 @@ function KalturaApiParameterPermissionItem(){
 	this.action = null;
 }
 KalturaApiParameterPermissionItem.inheritsFrom (KalturaPermissionItem);
+
+
+/**
+ * @param	feedDescription	string		feed description
+ *	.
+ * @param	feedLandingPage	string		feed landing page (i.e publisher website)
+ *	.
+ */
+function KalturaGenericSyndicationFeed(){
+	this.feedDescription = null;
+	this.feedLandingPage = null;
+}
+KalturaGenericSyndicationFeed.inheritsFrom (KalturaBaseSyndicationFeed);
+
+
+/**
+ * @param	xslt	string		.
+ */
+function KalturaGenericXsltSyndicationFeed(){
+	this.xslt = null;
+}
+KalturaGenericXsltSyndicationFeed.inheritsFrom (KalturaGenericSyndicationFeed);
 
 
 /**

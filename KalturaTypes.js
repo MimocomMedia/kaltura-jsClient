@@ -435,11 +435,14 @@ function KalturaDistributionProviderOrderBy(){
 function KalturaDistributionProviderType(){
 }
 KalturaDistributionProviderType.GENERIC = "1";
+KalturaDistributionProviderType.SYNDICATION = "2";
 KalturaDistributionProviderType.MSN = "msnDistribution.MSN";
-KalturaDistributionProviderType.HULU = "huluDistribution.HULU";
-KalturaDistributionProviderType.VERIZON = "verizonDistribution.VERIZON";
 KalturaDistributionProviderType.COMCAST = "comcastDistribution.COMCAST";
 KalturaDistributionProviderType.YOUTUBE = "youTubeDistribution.YOUTUBE";
+KalturaDistributionProviderType.IDETIC = "ideticDistribution.IDETIC";
+KalturaDistributionProviderType.MYSPACE = "myspaceDistribution.MYSPACE";
+KalturaDistributionProviderType.VERIZON = "verizonDistribution.VERIZON";
+KalturaDistributionProviderType.DAILYMOTION = "dailymotionDistribution.DAILYMOTION";
 
 function KalturaDocumentEntryOrderBy(){
 }
@@ -556,6 +559,7 @@ KalturaFileSyncObjectType.BATCHJOB = "3";
 KalturaFileSyncObjectType.FLAVOR_ASSET = "4";
 KalturaFileSyncObjectType.METADATA = "5";
 KalturaFileSyncObjectType.METADATA_PROFILE = "6";
+KalturaFileSyncObjectType.SYNDICATION_FEED = "7";
 KalturaFileSyncObjectType.GENERIC_DISTRIBUTION_ACTION = "contentDistribution.GenericDistributionAction";
 KalturaFileSyncObjectType.ENTRY_DISTRIBUTION = "contentDistribution.EntryDistribution";
 KalturaFileSyncObjectType.DISTRIBUTION_PROFILE = "contentDistribution.DistributionProfile";
@@ -617,6 +621,28 @@ function KalturaGenericDistributionProviderStatus(){
 }
 KalturaGenericDistributionProviderStatus.ACTIVE = 2;
 KalturaGenericDistributionProviderStatus.DELETED = 3;
+
+function KalturaGenericSyndicationFeedOrderBy(){
+}
+KalturaGenericSyndicationFeedOrderBy.PLAYLIST_ID_ASC = "+playlistId";
+KalturaGenericSyndicationFeedOrderBy.PLAYLIST_ID_DESC = "-playlistId";
+KalturaGenericSyndicationFeedOrderBy.NAME_ASC = "+name";
+KalturaGenericSyndicationFeedOrderBy.NAME_DESC = "-name";
+KalturaGenericSyndicationFeedOrderBy.TYPE_ASC = "+type";
+KalturaGenericSyndicationFeedOrderBy.TYPE_DESC = "-type";
+KalturaGenericSyndicationFeedOrderBy.CREATED_AT_ASC = "+createdAt";
+KalturaGenericSyndicationFeedOrderBy.CREATED_AT_DESC = "-createdAt";
+
+function KalturaGenericXsltSyndicationFeedOrderBy(){
+}
+KalturaGenericXsltSyndicationFeedOrderBy.PLAYLIST_ID_ASC = "+playlistId";
+KalturaGenericXsltSyndicationFeedOrderBy.PLAYLIST_ID_DESC = "-playlistId";
+KalturaGenericXsltSyndicationFeedOrderBy.NAME_ASC = "+name";
+KalturaGenericXsltSyndicationFeedOrderBy.NAME_DESC = "-name";
+KalturaGenericXsltSyndicationFeedOrderBy.TYPE_ASC = "+type";
+KalturaGenericXsltSyndicationFeedOrderBy.TYPE_DESC = "-type";
+KalturaGenericXsltSyndicationFeedOrderBy.CREATED_AT_ASC = "+createdAt";
+KalturaGenericXsltSyndicationFeedOrderBy.CREATED_AT_DESC = "-createdAt";
 
 function KalturaGoogleSyndicationFeedAdultValues(){
 }
@@ -720,6 +746,11 @@ KalturaITunesSyndicationFeedOrderBy.TYPE_ASC = "+type";
 KalturaITunesSyndicationFeedOrderBy.TYPE_DESC = "-type";
 KalturaITunesSyndicationFeedOrderBy.CREATED_AT_ASC = "+createdAt";
 KalturaITunesSyndicationFeedOrderBy.CREATED_AT_DESC = "-createdAt";
+
+function KalturaIpAddressRestrictionType(){
+}
+KalturaIpAddressRestrictionType.RESTRICT_LIST = 0;
+KalturaIpAddressRestrictionType.ALLOW_LIST = 1;
 
 function KalturaLicenseType(){
 }
@@ -1398,6 +1429,8 @@ KalturaSyndicationFeedType.GOOGLE_VIDEO = 1;
 KalturaSyndicationFeedType.YAHOO = 2;
 KalturaSyndicationFeedType.ITUNES = 3;
 KalturaSyndicationFeedType.TUBE_MOGUL = 4;
+KalturaSyndicationFeedType.KALTURA = 5;
+KalturaSyndicationFeedType.KALTURA_XSLT = 6;
 
 function KalturaThumbAssetOrderBy(){
 }

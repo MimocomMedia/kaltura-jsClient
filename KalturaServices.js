@@ -2118,7 +2118,7 @@ KalturaPermissionItemService.prototype.deleteAction = function(callback, permiss
  *	.
  * @param	filter	KalturaPermissionItemFilter		 (optional, default: null).
  * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaPremissionItemListResponse.
+ * @return	KalturaPermissionItemListResponse.
  */
 KalturaPermissionItemService.prototype.listAction = function(callback, filter, pager){
 	if(!filter)
@@ -3270,6 +3270,8 @@ KalturaThumbParamsService.prototype.getByConversionProfileId = function(callback
  * @action	listTemplates	retrieve a list of available template UIConfs.
  * @action	list	Retrieve a list of available UIConfs
  *	.
+ * @action	getAvailableTypes	Retrieve a list of all available versions by object type
+ *	.
 */
 function KalturaUiConfService(client){
 	this.init(client);
@@ -3380,6 +3382,17 @@ KalturaUiConfService.prototype.listAction = function(callback, filter, pager){
 	if (pager != null)
 		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("uiConf", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve a list of all available versions by object type
+ *	.
+ * @return	array.
+ */
+KalturaUiConfService.prototype.getAvailableTypes = function(callback){
+	var kparams = new Object();
+	this.client.queueServiceActionCall("uiConf", "getAvailableTypes", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -5015,6 +5028,8 @@ KalturaMediaInfoService.prototype.listAction = function(callback, filter, pager)
  * The available service actions:
  * @action	get	Get base entry by ID with no filters.
  *	.
+ * @action	getByFlavorId	Get base entry by flavor ID with no filters.
+ *	.
  * @action	getTracks	Get base entry by ID with no filters.
  *	.
 */
@@ -5040,6 +5055,23 @@ KalturaEntryAdminService.prototype.get = function(callback, entryId, version){
 		this.client.doQueue(callback);
 }
 /**
+ * Get base entry by flavor ID with no filters.
+ *	.
+ * @param	flavorId	string		 (optional).
+ * @param	version	int		Desired version of the data (optional, default: -1).
+ * @return	KalturaBaseEntry.
+ */
+KalturaEntryAdminService.prototype.getByFlavorId = function(callback, flavorId, version){
+	if(!version)
+		version = -1;
+	var kparams = new Object();
+	this.client.addParam(kparams, "flavorId", flavorId);
+	this.client.addParam(kparams, "version", version);
+	this.client.queueServiceActionCall("entryAdmin", "getByFlavorId", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
  * Get base entry by ID with no filters.
  *	.
  * @param	entryId	string		Entry id (optional).
@@ -5049,6 +5081,77 @@ KalturaEntryAdminService.prototype.getTracks = function(callback, entryId){
 	var kparams = new Object();
 	this.client.addParam(kparams, "entryId", entryId);
 	this.client.queueServiceActionCall("entryAdmin", "getTracks", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: uiConfAdmin.
+ * The available service actions:
+ * @action	add	Adds new UIConf with no partner limitation
+ *	.
+ * @action	update	Update an existing UIConf with no partner limitation
+ *	.
+ * @action	get	Retrieve a UIConf by id with no partner limitation
+ *	.
+ * @action	delete	Delete an existing UIConf with no partner limitation
+ *	.
+*/
+function KalturaUiConfAdminService(client){
+	this.init(client);
+}
+KalturaUiConfAdminService.inheritsFrom (KalturaServiceBase);
+/**
+ * Adds new UIConf with no partner limitation
+ *	.
+ * @param	uiConf	KalturaUiConf		 (optional).
+ * @return	KalturaUiConf.
+ */
+KalturaUiConfAdminService.prototype.add = function(callback, uiConf){
+	var kparams = new Object();
+	this.client.addParam(kparams, "uiConf", toParams(uiConf));
+	this.client.queueServiceActionCall("uiConfAdmin", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update an existing UIConf with no partner limitation
+ *	.
+ * @param	id	int		 (optional).
+ * @param	uiConf	KalturaUiConf		 (optional).
+ * @return	KalturaUiConf.
+ */
+KalturaUiConfAdminService.prototype.update = function(callback, id, uiConf){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "uiConf", toParams(uiConf));
+	this.client.queueServiceActionCall("uiConfAdmin", "update", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve a UIConf by id with no partner limitation
+ *	.
+ * @param	id	int		 (optional).
+ * @return	KalturaUiConf.
+ */
+KalturaUiConfAdminService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("uiConfAdmin", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Delete an existing UIConf with no partner limitation
+ *	.
+ * @param	id	int		 (optional).
+ * @return	.
+ */
+KalturaUiConfAdminService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("uiConfAdmin", "delete", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -5283,6 +5386,100 @@ KalturaVirusScanProfileService.prototype.scan = function(callback, flavorAssetId
 	this.client.addParam(kparams, "flavorAssetId", flavorAssetId);
 	this.client.addParam(kparams, "virusScanProfileId", virusScanProfileId);
 	this.client.queueServiceActionCall("virusScanProfile", "scan", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+
+/**
+ *Class definition for the Kaltura service: annotation.
+ * The available service actions:
+ * @action	list	List annotation objects by filter and pager
+ *	.
+ * @action	add	Allows you to add an annotation object and Annotation content associated with Kaltura object
+ *	.
+ * @action	get	Retrieve an Annotation object by id
+ *	.
+ * @action	delete	delete annotation by id, and delete all children annotations
+ *	.
+ * @action	update	Update annotation by id 
+ *	.
+*/
+function KalturaAnnotationService(client){
+	this.init(client);
+}
+KalturaAnnotationService.inheritsFrom (KalturaServiceBase);
+/**
+ * List annotation objects by filter and pager
+ *	.
+ * @param	filter	KalturaAnnotationFilter		 (optional, default: null).
+ * @param	pager	KalturaFilterPager		 (optional, default: null).
+ * @return	KalturaAnnotationListResponse.
+ */
+KalturaAnnotationService.prototype.listAction = function(callback, filter, pager){
+	if(!filter)
+		filter = null;
+	if(!pager)
+		pager = null;
+	var kparams = new Object();
+	if (filter != null)
+		this.client.addParam(kparams, "filter", toParams(filter));
+	if (pager != null)
+		this.client.addParam(kparams, "pager", toParams(pager));
+	this.client.queueServiceActionCall("annotation", "list", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Allows you to add an annotation object and Annotation content associated with Kaltura object
+ *	.
+ * @param	annotation	KalturaAnnotation		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.add = function(callback, annotation){
+	var kparams = new Object();
+	this.client.addParam(kparams, "annotation", toParams(annotation));
+	this.client.queueServiceActionCall("annotation", "add", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Retrieve an Annotation object by id
+ *	.
+ * @param	id	string		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.get = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("annotation", "get", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * delete annotation by id, and delete all children annotations
+ *	.
+ * @param	id	string		 (optional).
+ * @return	.
+ */
+KalturaAnnotationService.prototype.deleteAction = function(callback, id){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.queueServiceActionCall("annotation", "delete", kparams);
+	if (!this.client.isMultiRequest())
+		this.client.doQueue(callback);
+}
+/**
+ * Update annotation by id 
+ *	.
+ * @param	id	string		 (optional).
+ * @param	annotation	KalturaAnnotation		 (optional).
+ * @return	KalturaAnnotation.
+ */
+KalturaAnnotationService.prototype.update = function(callback, id, annotation){
+	var kparams = new Object();
+	this.client.addParam(kparams, "id", id);
+	this.client.addParam(kparams, "annotation", toParams(annotation));
+	this.client.queueServiceActionCall("annotation", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }
@@ -5981,100 +6178,6 @@ KalturaGenericDistributionProviderActionService.prototype.listAction = function(
 	if (pager != null)
 		this.client.addParam(kparams, "pager", toParams(pager));
 	this.client.queueServiceActionCall("genericDistributionProviderAction", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-
-/**
- *Class definition for the Kaltura service: annotation.
- * The available service actions:
- * @action	list	List annotation objects by filter and pager
- *	.
- * @action	add	Allows you to add an annotation object and Annotation content associated with Kaltura object
- *	.
- * @action	get	Retrieve an Annotation object by id
- *	.
- * @action	delete	delete annotation by id, and delete all children annotations
- *	.
- * @action	update	Update annotation by id 
- *	.
-*/
-function KalturaAnnotationService(client){
-	this.init(client);
-}
-KalturaAnnotationService.inheritsFrom (KalturaServiceBase);
-/**
- * List annotation objects by filter and pager
- *	.
- * @param	filter	KalturaAnnotationFilter		 (optional, default: null).
- * @param	pager	KalturaFilterPager		 (optional, default: null).
- * @return	KalturaAnnotationListResponse.
- */
-KalturaAnnotationService.prototype.listAction = function(callback, filter, pager){
-	if(!filter)
-		filter = null;
-	if(!pager)
-		pager = null;
-	var kparams = new Object();
-	if (filter != null)
-		this.client.addParam(kparams, "filter", toParams(filter));
-	if (pager != null)
-		this.client.addParam(kparams, "pager", toParams(pager));
-	this.client.queueServiceActionCall("annotation", "list", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Allows you to add an annotation object and Annotation content associated with Kaltura object
- *	.
- * @param	annotation	KalturaAnnotation		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.add = function(callback, annotation){
-	var kparams = new Object();
-	this.client.addParam(kparams, "annotation", toParams(annotation));
-	this.client.queueServiceActionCall("annotation", "add", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Retrieve an Annotation object by id
- *	.
- * @param	id	string		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.get = function(callback, id){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.queueServiceActionCall("annotation", "get", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * delete annotation by id, and delete all children annotations
- *	.
- * @param	id	string		 (optional).
- * @return	.
- */
-KalturaAnnotationService.prototype.deleteAction = function(callback, id){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.queueServiceActionCall("annotation", "delete", kparams);
-	if (!this.client.isMultiRequest())
-		this.client.doQueue(callback);
-}
-/**
- * Update annotation by id 
- *	.
- * @param	id	string		 (optional).
- * @param	annotation	KalturaAnnotation		 (optional).
- * @return	KalturaAnnotation.
- */
-KalturaAnnotationService.prototype.update = function(callback, id, annotation){
-	var kparams = new Object();
-	this.client.addParam(kparams, "id", id);
-	this.client.addParam(kparams, "annotation", toParams(annotation));
-	this.client.queueServiceActionCall("annotation", "update", kparams);
 	if (!this.client.isMultiRequest())
 		this.client.doQueue(callback);
 }

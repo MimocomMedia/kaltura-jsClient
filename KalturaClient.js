@@ -223,6 +223,11 @@ KalturaClient.prototype.mediaInfo = null;
  */
 KalturaClient.prototype.entryAdmin = null;
 /**
+ * UiConf Admin service
+ * @param KalturaUiConfAdminService
+ */
+KalturaClient.prototype.uiConfAdmin = null;
+/**
  * Internal Tools Service
  *	
  * @param KalturaKalturaInternalToolsService
@@ -244,6 +249,11 @@ KalturaClient.prototype.auditTrail = null;
  * @param KalturaVirusScanProfileService
  */
 KalturaClient.prototype.virusScanProfile = null;
+/**
+ * Annotation service - Video Annotation
+ * @param KalturaAnnotationService
+ */
+KalturaClient.prototype.annotation = null;
 /**
  * Distribution Profile service
  * @param KalturaDistributionProfileService
@@ -269,11 +279,6 @@ KalturaClient.prototype.genericDistributionProvider = null;
  * @param KalturaGenericDistributionProviderActionService
  */
 KalturaClient.prototype.genericDistributionProviderAction = null;
-/**
- * Annotation service - Video Annotation
- * @param KalturaAnnotationService
- */
-KalturaClient.prototype.annotation = null;
 /**
  * Short link service
  * @param KalturaShortLinkService
@@ -329,15 +334,16 @@ KalturaClient.prototype.init = function(config){
 	this.thumbParamsOutput = new KalturaThumbParamsOutputService(this);
 	this.mediaInfo = new KalturaMediaInfoService(this);
 	this.entryAdmin = new KalturaEntryAdminService(this);
+	this.uiConfAdmin = new KalturaUiConfAdminService(this);
 	this.KalturaInternalTools = new KalturaKalturaInternalToolsService(this);
 	this.kalturaInternalToolsSystemHelper = new KalturaKalturaInternalToolsSystemHelperService(this);
 	this.auditTrail = new KalturaAuditTrailService(this);
 	this.virusScanProfile = new KalturaVirusScanProfileService(this);
+	this.annotation = new KalturaAnnotationService(this);
 	this.distributionProfile = new KalturaDistributionProfileService(this);
 	this.entryDistribution = new KalturaEntryDistributionService(this);
 	this.distributionProvider = new KalturaDistributionProviderService(this);
 	this.genericDistributionProvider = new KalturaGenericDistributionProviderService(this);
 	this.genericDistributionProviderAction = new KalturaGenericDistributionProviderActionService(this);
-	this.annotation = new KalturaAnnotationService(this);
 	this.shortLink = new KalturaShortLinkService(this);
 }
